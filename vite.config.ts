@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { loadEnv } from 'vite'
 import VueRouter from 'unplugin-vue-router/vite'
+import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const randomString = '/asdfasdf'
@@ -13,6 +14,7 @@ export default defineConfig(({ mode }) => {
         extensions: ['.page.vue'],
         dts: "./src/typed-router.d.ts",
       }),
+      tailwindcss(),
       vue()
     ],
     server: {

@@ -1,11 +1,10 @@
-<template>
-    <h1>hello 这里是/页面，index.page.vue</h1>
-    <button @click="handleClick">跳转到auth</button>
-</template>
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
+
 const router = useRouter()
-const handleClick = () => {
-    router.push({ name: '/auth' })
-}
+
+router.replace({ path: '/latest' })
 </script>
+
+<template>
+</template>

@@ -1,6 +1,11 @@
+export const forumUiConfig = {
+  // Developer-only theme entrypoint: update this value to change the forum primary color.
+  themeColor: '#2764ff',
+}
+
 export const apiClientConfig = {
-    baseURL: import.meta.env.DEV ? '/asdfasdf' : import.meta.env.VITE_BACK_API,
-    headers: {
-        "Content-Type": "application/json",
-    },
+  baseURL: import.meta.env.DEV ? '/asdfasdf' : import.meta.env.VITE_BACK_API,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 }
