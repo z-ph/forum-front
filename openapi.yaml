@@ -1,0 +1,247 @@
+openapi: 3.1.0
+info:
+  title: 默认模块
+  description: ''
+  version: 1.0.0
+tags:
+  - name: 用户
+paths:
+  /user/register:
+    post:
+      summary: 用户注册
+      deprecated: false
+      description: ''
+      tags:
+        - 用户
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDTO'
+              description: ''
+            example:
+              username: user
+              email: admin123@slz.com
+              password: admin123
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultString'
+                description: ''
+              example:
+                code: 0
+                msg: ''
+                data: ''
+          headers: {}
+      security:
+        - bearer: []
+  /user/login:
+    post:
+      summary: 用户登录
+      deprecated: false
+      description: ''
+      tags:
+        - 用户
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDTO'
+              description: ''
+            example:
+              email: admin123@slz.com
+              password: admin123
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultString'
+                description: ''
+              example:
+                code: 0
+                msg: ''
+                data: ''
+          headers: {}
+      security:
+        - bearer: []
+  /user/me:
+    get:
+      summary: 获取当前用户信息
+      deprecated: false
+      description: ''
+      tags:
+        - 用户
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultUserVO'
+                description: ''
+              example:
+                code: 0
+                msg: ''
+                data:
+                  id: 0
+                  username: ''
+                  email: ''
+                  avatar: ''
+                  role: ''
+                  status: 0
+                  createTime: ''
+                  updateTime: ''
+          headers: {}
+      security:
+        - bearer: []
+  /user/update:
+    put:
+      summary: 修改用户信息
+      deprecated: false
+      description: ''
+      tags:
+        - 用户
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          schema:
+            type: integer
+        - name: nickname
+          in: query
+          description: ''
+          required: false
+          schema:
+            type: string
+        - name: email
+          in: query
+          description: ''
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultString'
+              example:
+                code: 0
+                msg: ''
+                data: ''
+      security:
+        - bearer: []
+webhooks: {}
+components:
+  schemas:
+    ResultString:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: ''
+        msg:
+          type: string
+          description: ''
+        data:
+          type: string
+          description: ''
+    RegisterDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          description: ''
+        email:
+          type: string
+          description: ''
+          format: email
+        password:
+          type: string
+          description: ''
+          minLength: 6
+      required:
+        - username
+        - email
+        - password
+    LoginDTO:
+      type: object
+      properties:
+        email:
+          type: string
+          description: ''
+        password:
+          type: string
+          description: ''
+      required:
+        - email
+        - password
+    UserVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ''
+          format: int64
+        username:
+          type: string
+          description: ''
+        email:
+          type: string
+          description: ''
+        avatar:
+          type: string
+          description: ''
+        role:
+          type: string
+          description: ''
+          enum:
+            - USER
+            - ADMIN
+        status:
+          type: integer
+          description: ''
+        createTime:
+          type: string
+          description: ''
+        updateTime:
+          type: string
+          description: ''
+    ResultUserVO:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: ''
+        msg:
+          type: string
+          description: ''
+        data:
+          $ref: '#/components/schemas/UserVO'
+          description: ''
+  responses: {}
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+servers: []
+security: []
