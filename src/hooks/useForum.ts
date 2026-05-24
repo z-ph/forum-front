@@ -1,9 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/vue-query'
 import type {
-  AuthPayload,
   CreateReplyPayload,
   CreateTopicPayload,
-  RegisterPayload,
 } from '../types/forum'
 import {
   createReply,
@@ -35,27 +33,31 @@ export function useTopicDetailQuery(topicId: string) {
   })
 }
 
-export function useLoginMutation() {
-  const queryClient = useQueryClient()
+// ---------- Mutation factory ----------
 
-  return useMutation({
-    mutationFn: (payload: AuthPayload) => login(payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: forumKeys.home })
-    },
-  })
+function createForumMutation<TData, TVars>(
+  mutationFn: (vars: TVars) => Promise<TData>,
+  extraInvalidations?: (data: TData, vars: TVars) => QueryKey[],
+) {
+  return () => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+      mutationFn,
+      onSuccess: (data, vars) => {
+        void queryClient.invalidateQueries({ queryKey: forumKeys.home })
+        if (extraInvalidations) {
+          for (const key of extraInvalidations(data as TData, vars as TVars)) {
+            void queryClient.invalidateQueries({ queryKey: key })
+          }
+        }
+      },
+    })
+  }
 }
 
-export function useRegisterMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (payload: RegisterPayload) => register(payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: forumKeys.home })
-    },
-  })
-}
+export const useLoginMutation = createForumMutation(login)
+export const useRegisterMutation = createForumMutation(register)
 
 export function useLogoutMutation() {
   const queryClient = useQueryClient()
@@ -67,27 +69,11 @@ export function useLogoutMutation() {
     },
   })
 }
-
-export function useCreateTopicMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (payload: CreateTopicPayload) => createTopic(payload),
-    onSuccess: (topic) => {
-      void queryClient.invalidateQueries({ queryKey: forumKeys.home })
-      void queryClient.invalidateQueries({ queryKey: forumKeys.detail(topic.id) })
-    },
-  })
-}
-
-export function useCreateReplyMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (payload: CreateReplyPayload) => createReply(payload),
-    onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: forumKeys.home })
-      void queryClient.invalidateQueries({ queryKey: forumKeys.detail(variables.topicId) })
-    },
-  })
-}
+export const useCreateTopicMutation = createForumMutation(
+  (payload: CreateTopicPayload) => createTopic(payload),
+  (topic) => [forumKeys.detail(topic.id)],
+)
+export const useCreateReplyMutation = createForumMutation(
+  (payload: CreateReplyPayload) => createReply(payload),
+  (_, vars) => [forumKeys.detail(vars.topicId)],
+)
