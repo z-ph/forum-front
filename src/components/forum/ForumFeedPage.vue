@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ForumFeedPage from '../../components/forum/ForumFeedPage.vue'
+import TopicList from './TopicList.vue'
 import type { ForumTopic } from '../../types/forum'
 
 defineProps<{
@@ -15,11 +15,17 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <ForumFeedPage
+  <el-skeleton v-if="isLoading" animated :rows="9" />
+  <el-result
+    v-else-if="isError"
+    icon="warning"
+    title="加载失败"
+    sub-title="当前是 mock 数据层，刷新通常即可恢复。"
+  />
+  <TopicList
+    v-else
     :topics="topics"
     :empty-description="emptyDescription"
-    :is-loading="isLoading"
-    :is-error="isError"
-    @open-topic="emit('openTopic', $event)"
+    @open="emit('openTopic', $event)"
   />
 </template>
