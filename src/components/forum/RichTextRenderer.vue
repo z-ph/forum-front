@@ -1,7 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { MdPreview } from 'md-editor-v3'
-
-let previewSeed = 0
 
 const props = withDefaults(defineProps<{
   content: string
@@ -10,21 +9,30 @@ const props = withDefaults(defineProps<{
   emptyText: '暂无内容',
 })
 
-const previewId = `forum-md-preview-${previewSeed += 1}`
+let previewSeed = 0
+
+function nextPreviewId() {
+  previewSeed += 1
+  return `forum-md-preview-${previewSeed}`
+}
+
+const previewId = nextPreviewId()
+const previewContent = computed(() => props.content)
+const fallbackText = computed(() => props.emptyText)
 </script>
 
 <template>
   <div class="rich-text-renderer">
     <MdPreview
-      v-if="content"
+      v-if="previewContent"
       :id="previewId"
-      :model-value="content"
+      :model-value="previewContent"
       :theme="'light'"
       :preview-theme="'github'"
       :code-theme="'atom'"
       class="rich-text-renderer__markdown"
     />
-    <p v-else class="rich-text-renderer__empty">{{ emptyText }}</p>
+    <p v-else class="rich-text-renderer__empty">{{ fallbackText }}</p>
   </div>
 </template>
 

@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-router.replace({ path: '/latest' })
+onMounted(() => {
+  void router.replace({ path: '/latest' })
+})
 </script>
 
 <template>
+  <div />
 </template>

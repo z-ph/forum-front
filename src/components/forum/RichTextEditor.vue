@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useFormItem } from 'element-plus'
-import { MdEditor } from 'md-editor-v3'
-import type { ToolbarNames, UploadImgEvent } from 'md-editor-v3'
+import { MdEditor, type ToolbarNames, type UploadImgEvent } from 'md-editor-v3'
 
 const props = withDefaults(defineProps<{
   modelValue: string
@@ -37,8 +36,17 @@ const editorHeight = computed(() => `${Math.max(props.rows * 26 + 130, 320)}px`)
 watch(
   () => props.modelValue,
   (next, previous) => {
-    if (!props.validateEvent || next === previous) return
-    formItem?.validate?.('change').catch(() => undefined)
+    if (!props.validateEvent || next === previous) {
+      return
+    }
+
+    const validate = formItem?.validate
+
+    if (!validate) {
+      return
+    }
+
+    void validate('change').catch(() => undefined)
   },
 )
 
@@ -49,29 +57,45 @@ function updateValue(value: string) {
 function handleBlur() {
   emit('blur')
 
-  if (!props.validateEvent) return
-  formItem?.validate?.('blur').catch(() => undefined)
+  if (!props.validateEvent) {
+    return
+  }
+
+  const validate = formItem?.validate
+
+  if (!validate) {
+    return
+  }
+
+  void validate('blur').catch(() => undefined)
 }
 
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result ?? ''))
-    reader.onerror = () => reject(reader.error)
+
+    reader.onload = () => {
+      resolve(typeof reader.result === 'string' ? reader.result : '')
+    }
+
+    reader.onerror = () => {
+      reject(reader.error ?? new Error('图片读取失败'))
+    }
+
     reader.readAsDataURL(file)
   })
 }
 
-const handleUploadImg: UploadImgEvent = async (files, callback) => {
-  const uploads = await Promise.all(
+const handleUploadImg: UploadImgEvent = (files, callback) => {
+  void Promise.all(
     files.map(async (file) => ({
       url: await readFileAsDataUrl(file),
       alt: file.name.replace(/\.[^.]+$/, '') || 'image',
       title: file.name,
     })),
-  )
-
-  callback(uploads)
+  ).then((uploads) => {
+    callback(uploads)
+  }).catch(() => undefined)
 }
 </script>
 

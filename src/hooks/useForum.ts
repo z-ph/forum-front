@@ -41,7 +41,7 @@ export function useLoginMutation() {
   return useMutation({
     mutationFn: (payload: AuthPayload) => login(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: forumKeys.home })
+      void queryClient.invalidateQueries({ queryKey: forumKeys.home })
     },
   })
 }
@@ -52,7 +52,7 @@ export function useRegisterMutation() {
   return useMutation({
     mutationFn: (payload: RegisterPayload) => register(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: forumKeys.home })
+      void queryClient.invalidateQueries({ queryKey: forumKeys.home })
     },
   })
 }
@@ -63,7 +63,7 @@ export function useLogoutMutation() {
   return useMutation({
     mutationFn: logout,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: forumKeys.home })
+      void queryClient.invalidateQueries({ queryKey: forumKeys.home })
     },
   })
 }
@@ -74,8 +74,8 @@ export function useCreateTopicMutation() {
   return useMutation({
     mutationFn: (payload: CreateTopicPayload) => createTopic(payload),
     onSuccess: (topic) => {
-      queryClient.invalidateQueries({ queryKey: forumKeys.home })
-      queryClient.invalidateQueries({ queryKey: forumKeys.detail(topic.id) })
+      void queryClient.invalidateQueries({ queryKey: forumKeys.home })
+      void queryClient.invalidateQueries({ queryKey: forumKeys.detail(topic.id) })
     },
   })
 }
@@ -86,8 +86,8 @@ export function useCreateReplyMutation() {
   return useMutation({
     mutationFn: (payload: CreateReplyPayload) => createReply(payload),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: forumKeys.home })
-      queryClient.invalidateQueries({ queryKey: forumKeys.detail(variables.topicId) })
+      void queryClient.invalidateQueries({ queryKey: forumKeys.home })
+      void queryClient.invalidateQueries({ queryKey: forumKeys.detail(variables.topicId) })
     },
   })
 }

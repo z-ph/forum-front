@@ -15,7 +15,10 @@ const content = ref('')
 const canSubmit = computed(() => hasRichTextContent(content.value))
 
 function handleSubmit() {
-  if (!canSubmit.value) return
+  if (!canSubmit.value) {
+    return
+  }
+
   emit('submit', content.value.trim())
   content.value = ''
 }

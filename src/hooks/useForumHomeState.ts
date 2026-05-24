@@ -19,7 +19,10 @@ function parseForumDate(value: string) {
 
 function sortLatest(topics: ForumTopic[]) {
   return [...topics].sort((left, right) => {
-    if (!!left.pinned !== !!right.pinned) return Number(!!right.pinned) - Number(!!left.pinned)
+    if (!!left.pinned !== !!right.pinned) {
+      return Number(!!right.pinned) - Number(!!left.pinned)
+    }
+
     return parseForumDate(right.updatedAt) - parseForumDate(left.updatedAt)
   })
 }
@@ -27,7 +30,11 @@ function sortLatest(topics: ForumTopic[]) {
 function sortByCategory(topics: ForumTopic[]) {
   return [...topics].sort((left, right) => {
     const categoryCompare = left.categoryName.localeCompare(right.categoryName, 'zh-CN')
-    if (categoryCompare !== 0) return categoryCompare
+
+    if (categoryCompare !== 0) {
+      return categoryCompare
+    }
+
     return parseForumDate(right.updatedAt) - parseForumDate(left.updatedAt)
   })
 }
@@ -61,7 +68,10 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
   })
 
   const activeCategory = computed<ForumCategory | null>(() => {
-    if (activeCategoryId.value === 'all') return null
+    if (activeCategoryId.value === 'all') {
+      return null
+    }
+
     return categories.value.find((item) => item.id === activeCategoryId.value) ?? null
   })
 
@@ -117,7 +127,7 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
   })
 
   function updateQuery(next: { category?: string; tag?: string }) {
-    router.replace({
+    void router.replace({
       path: route.path,
       query: {
         category: next.category && next.category !== 'all' ? next.category : undefined,
@@ -135,7 +145,7 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
   }
 
   function openTopic(topicId: string) {
-    router.push({ path: `/topics/${topicId}` })
+    void router.push({ path: `/topics/${topicId}` })
   }
 
   async function handleCreateTopic(payload: CreateTopicPayload) {
@@ -143,7 +153,7 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
       const topic = await createTopicMutation.mutateAsync(payload)
       ElMessage.success('主题已发布')
       composeOpen.value = false
-      router.push({ path: `/topics/${topic.id}` })
+      void router.push({ path: `/topics/${topic.id}` })
     } catch (error) {
       ElMessage.error((error as Error).message)
     }
@@ -155,7 +165,7 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
   }
 
   function handleAuth() {
-    router.push({ path: '/auth' })
+    void router.push({ path: '/auth' })
   }
 
   function handleSearch() {
@@ -164,7 +174,7 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
 
   function handleCompose() {
     if (!me.value) {
-      router.push({ path: '/auth' })
+      void router.push({ path: '/auth' })
       return
     }
 

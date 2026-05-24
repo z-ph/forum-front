@@ -18,7 +18,9 @@ const { data, isLoading, isError } = useTopicDetailQuery(topicId.value)
 const replyMutation = useCreateReplyMutation()
 
 async function handleReply(content: string) {
-  if (!data.value) return
+  if (!data.value) {
+    return
+  }
 
   try {
     await replyMutation.mutateAsync({

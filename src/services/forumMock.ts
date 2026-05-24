@@ -240,7 +240,11 @@ export async function getForumHome(): Promise<ForumHomeData> {
 export async function getTopicDetail(topicId: string): Promise<ForumTopicDetail> {
   await wait()
   const topic = topics.find((item) => item.id === topicId)
-  if (!topic) throw new Error('话题不存在')
+
+  if (!topic) {
+    throw new Error('话题不存在')
+  }
+
   topic.views += 1
   return structuredClone(topic)
 }
@@ -291,11 +295,17 @@ export async function logout() {
 
 export async function createTopic(payload: CreateTopicPayload): Promise<ForumTopicDetail> {
   await wait()
-  if (!currentUser) throw new Error('请先登录')
+
+  if (!currentUser) {
+    throw new Error('请先登录')
+  }
 
   const isAdmin = currentUser.role === 'admin'
   const categoryValue = payload.categoryId.trim()
-  if (!categoryValue) throw new Error('请选择分类')
+
+  if (!categoryValue) {
+    throw new Error('请选择分类')
+  }
 
   let category = categories.find((item) => item.id === categoryValue)
   if (!category) {
@@ -347,10 +357,16 @@ export async function createTopic(payload: CreateTopicPayload): Promise<ForumTop
 
 export async function createReply(payload: CreateReplyPayload): Promise<ForumReply> {
   await wait()
-  if (!currentUser) throw new Error('请先登录')
+
+  if (!currentUser) {
+    throw new Error('请先登录')
+  }
 
   const topic = topics.find((item) => item.id === payload.topicId)
-  if (!topic) throw new Error('话题不存在')
+
+  if (!topic) {
+    throw new Error('话题不存在')
+  }
 
   const reply: ForumReply = {
     id: `r-${Date.now()}`,

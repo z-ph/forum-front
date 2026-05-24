@@ -44,7 +44,7 @@ async function handleSubmit() {
       ElMessage.success('注册成功，已自动登录')
     }
 
-    router.push({ path: '/' })
+    void router.push({ path: '/' })
   } catch (error) {
     ElMessage.error((error as Error).message || '提交失败，请稍后重试')
   }

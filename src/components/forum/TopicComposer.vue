@@ -66,7 +66,10 @@ watch(
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
+
+  if (!valid) {
+    return
+  }
 
   emit('submit', {
     title: form.title.trim(),
@@ -133,7 +136,7 @@ function handleClose() {
           multiple
           collapse-tags
           collapse-tags-tooltip
-          :filterable="true"
+          filterable
           :allow-create="isAdmin"
           :default-first-option="isAdmin"
           placeholder="请选择标签"
