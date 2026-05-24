@@ -166,8 +166,7 @@ const handleUploadImg: UploadImgEvent = (files, callback) => {
 
 .rich-editor :deep(.md-editor-input-wrapper),
 .rich-editor :deep(.md-editor-preview-wrapper) {
-  font-family:
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
 }
 
 .rich-editor :deep(.md-editor-input) {

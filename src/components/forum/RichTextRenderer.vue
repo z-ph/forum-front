@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { MdPreview } from 'md-editor-v3'
 
 const props = withDefaults(defineProps<{
@@ -17,22 +16,20 @@ function nextPreviewId() {
 }
 
 const previewId = nextPreviewId()
-const previewContent = computed(() => props.content)
-const fallbackText = computed(() => props.emptyText)
 </script>
 
 <template>
   <div class="rich-text-renderer">
     <MdPreview
-      v-if="previewContent"
+      v-if="props.content"
       :id="previewId"
-      :model-value="previewContent"
+      :model-value="props.content"
       :theme="'light'"
       :preview-theme="'github'"
       :code-theme="'atom'"
       class="rich-text-renderer__markdown"
     />
-    <p v-else class="rich-text-renderer__empty">{{ fallbackText }}</p>
+    <p v-else class="rich-text-renderer__empty">{{ props.emptyText }}</p>
   </div>
 </template>
 
@@ -53,8 +50,7 @@ const fallbackText = computed(() => props.emptyText)
 
 .rich-text-renderer :deep(.md-editor-preview) {
   color: #4d5d73;
-  font-family:
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.98rem;
   line-height: 1.85;
 }
