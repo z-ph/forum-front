@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const randomString = '/asdfasdf'
+  const apiProxyPrefix = '/asdfasdf'
   const env = loadEnv(mode, process.cwd())
 
   return {
@@ -20,10 +20,10 @@ export default defineConfig(({ mode }) => {
     ],
     server: {
       proxy: {
-        [randomString]: {
+        [apiProxyPrefix]: {
           target: env.VITE_API_URL,
           changeOrigin: true,
-          rewrite: (path) => path.replace(randomString, ''),
+          rewrite: (path) => path.replace(apiProxyPrefix, ''),
         },
       },
     },
