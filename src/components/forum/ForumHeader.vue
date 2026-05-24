@@ -20,7 +20,7 @@ type HeaderMenuCommand = 'compose' | 'logout' | 'auth'
 const initials = computed(() => props.me?.name.trim().slice(0, 1) || '访')
 
 const avatarLabel = computed(() => {
-  if (!props.me) return '登录或注册'
+  if (!props.me) { return '登录或注册' }
   return `${props.me.name} · @${props.me.handle}`
 })
 
