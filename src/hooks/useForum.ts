@@ -105,7 +105,7 @@ async function fetchChildReplies(parentReplyId: string): Promise<ForumReply[]> {
 }
 
 async function loginUser(payload: AuthPayload): Promise<ForumUser> {
-  const res = await userApi.login({ email: payload.username, password: payload.password })
+  const res = await userApi.login({ email: payload.email, password: payload.password })
   if (res.code !== 200) {throw new Error(res.msg || '登录失败')}
 
   const userRes = await userApi.getCurrentUser()

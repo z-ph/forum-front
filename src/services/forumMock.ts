@@ -238,16 +238,16 @@ export async function getTopicDetail(topicId: string): Promise<ForumTopicDetail>
 export async function login(payload: AuthPayload): Promise<ForumUser> {
   await wait()
 
-  const normalizedHandle = payload.username.trim().toLowerCase()
+  const normalizedHandle = payload.email.trim().toLowerCase()
   const existingUser = users.find((user) => user.handle === normalizedHandle)
 
   currentUser = existingUser ?? {
     id: `u-${normalizedHandle}`,
-    name: payload.username,
+    name: payload.email,
     handle: normalizedHandle,
     title: '活跃成员',
     role: 'member',
-    avatar: `https://api.dicebear.com/9.x/thumbs/svg?seed=${payload.username}`,
+    avatar: `https://api.dicebear.com/9.x/thumbs/svg?seed=${payload.email}`,
   }
 
   if (!existingUser) {

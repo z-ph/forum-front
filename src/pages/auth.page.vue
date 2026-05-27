@@ -25,7 +25,7 @@ const subtitle = computed(() =>
 )
 
 async function handleSubmit() {
-  if (!form.username || !form.password || (mode.value === 'register' && !form.nickname)) {
+  if (!form.email || !form.password || (mode.value === 'register' && (!form.username || !form.nickname))) {
     ElMessage.warning('请先补全表单')
     return
   }
@@ -33,7 +33,7 @@ async function handleSubmit() {
   try {
     if (mode.value === 'login') {
       await loginMutation.mutateAsync({
-        username: form.username,
+        email: form.email,
         password: form.password,
       })
       ElMessage.success('登录成功')
@@ -118,11 +118,11 @@ async function handleSubmit() {
             <el-input v-model="form.nickname" placeholder="例如：周可" />
           </el-form-item>
 
-          <el-form-item v-if="mode === 'register'" label="邮箱">
+          <el-form-item label="邮箱">
             <el-input v-model="form.email" type="email" placeholder="例如：zhouke@example.com" />
           </el-form-item>
 
-          <el-form-item label="用户名">
+          <el-form-item v-if="mode === 'register'" label="用户名">
             <el-input v-model="form.username" placeholder="例如：zhouke" />
           </el-form-item>
 

@@ -52,13 +52,13 @@ export interface ForumTopicDetail extends ForumTopic {
 }
 
 export interface AuthPayload {
-  username: string
+  email: string
   password: string
 }
 
 export interface RegisterPayload extends AuthPayload {
   nickname: string
-  email: string
+  username: string
 }
 
 export interface CreateTopicPayload {
