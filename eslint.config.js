@@ -26,10 +26,8 @@ const config = tseslint.config(
       'dist/**',
       'node_modules/**',
       'src/typed-router.d.ts',
+      '.worktrees/**',
     ],
-    linterOptions: {
-      reportUnusedDisableDirectives: 'error',
-    },
   },
   {
     files: ['**/*.{js,mjs,cjs}'],
