@@ -34,7 +34,7 @@ const toggleStatusMutation = useToggleTopicStatusMutation()
 const filteredRecords = computed(() => {
   const records = data.value?.records ?? []
   const kw = filterParams.keyword?.trim()
-  if (!kw) return records
+  if (!kw) {return records}
   return records.filter((r) =>
     r.title.toLowerCase().includes(kw.toLowerCase()),
   )

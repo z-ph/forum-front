@@ -81,7 +81,7 @@ async function getTopicDetail(topicId: string): Promise<ForumTopicDetail> {
     replyApi.getReplyTopPage({ topicId: id, pageNum: 1, pageSize: 50 }),
   ])
 
-  if (topicRes.code !== 1) throw new Error(topicRes.msg || '话题不存在')
+  if (topicRes.code !== 1) {throw new Error(topicRes.msg || '话题不存在')}
 
   const userMap = buildUserMap([], topicRes.data ? [topicRes.data] : [])
   extendUserMapFromReplies(userMap, replyRes.data?.records ?? [])
@@ -97,7 +97,7 @@ async function fetchChildReplies(parentReplyId: string): Promise<ForumReply[]> {
     pageSize: 3,
   })
 
-  if (res.code !== 1) return []
+  if (res.code !== 1) {return []}
 
   const userMap = buildUserMap([], [])
   extendUserMapFromReplies(userMap, res.data?.records ?? [])
@@ -106,10 +106,10 @@ async function fetchChildReplies(parentReplyId: string): Promise<ForumReply[]> {
 
 async function loginUser(payload: AuthPayload): Promise<ForumUser> {
   const res = await userApi.login({ email: payload.username, password: payload.password })
-  if (res.code !== 200) throw new Error(res.msg || '登录失败')
+  if (res.code !== 200) {throw new Error(res.msg || '登录失败')}
 
   const userRes = await userApi.getCurrentUser()
-  if (userRes.code !== 200) throw new Error('无法获取用户信息')
+  if (userRes.code !== 200) {throw new Error('无法获取用户信息')}
   return toForumUser(userRes.data)
 }
 
@@ -120,10 +120,10 @@ async function registerUser(payload: RegisterPayload): Promise<ForumUser> {
     nickname: payload.nickname,
     password: payload.password,
   })
-  if (res.code !== 200) throw new Error(res.msg || '注册失败')
+  if (res.code !== 200) {throw new Error(res.msg || '注册失败')}
 
   const userRes = await userApi.getCurrentUser()
-  if (userRes.code !== 200) throw new Error('无法获取用户信息')
+  if (userRes.code !== 200) {throw new Error('无法获取用户信息')}
   return toForumUser(userRes.data)
 }
 
@@ -138,7 +138,7 @@ async function createReplyReal(payload: CreateReplyPayload): Promise<ForumReply>
     content: payload.content,
   })
 
-  if (res.code !== 1) throw new Error(res.msg || '回复失败')
+  if (res.code !== 1) {throw new Error(res.msg || '回复失败')}
 
   return {
     id: 'pending',
@@ -162,7 +162,7 @@ async function createTopicReal(payload: CreateTopicPayload): Promise<ForumTopicD
 
   for (const tagName of payload.tags ?? []) {
     const id = tagMap.value.get(tagName)
-    if (id !== undefined) tagIds.push(id)
+    if (id !== undefined) {tagIds.push(id)}
   }
 
   const res = await topicApi.createTopic({
@@ -172,7 +172,7 @@ async function createTopicReal(payload: CreateTopicPayload): Promise<ForumTopicD
     tagIds: tagIds.length ? tagIds : undefined,
   })
 
-  if (res.code !== 1) throw new Error(res.msg || '发布失败')
+  if (res.code !== 1) {throw new Error(res.msg || '发布失败')}
 
   return {
     id: 'pending',

@@ -73,7 +73,7 @@ async function expandReplies(replyId: string) {
       pageNum: 1,
       pageSize: 3,
     })
-    if (!isMounted) return
+    if (!isMounted) {return}
     if (res.code === 1 && res.data) {
       const userMap = buildUserMap([], [])
       extendUserMapFromReplies(userMap, res.data.records)
@@ -95,7 +95,7 @@ async function loadMoreChildReplies(replyId: string) {
       pageNum: nextPage,
       pageSize: 3,
     })
-    if (!isMounted) return
+    if (!isMounted) {return}
     if (res.code === 1 && res.data) {
       const userMap = buildUserMap([], [])
       extendUserMapFromReplies(userMap, res.data.records)

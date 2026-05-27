@@ -4,8 +4,6 @@ import { useRouter } from 'vue-router'
 import { EditPen } from '@element-plus/icons-vue'
 import type { ForumCategory, ForumTopicFeed } from '../../types/forum'
 
-const router = useRouter()
-
 const props = defineProps<{
   categories: ForumCategory[]
   tags: string[]
@@ -21,6 +19,8 @@ const emit = defineEmits<{
   'update:activeCategoryId': [value: string]
   'update:activeTag': [value: string]
 }>()
+
+const router = useRouter()
 
 const feedItems: Array<{ key: ForumTopicFeed; label: string; title: string; path: string }> = [
   { key: 'categories', label: '类别', title: '按类别查看话题', path: '/categories' },
