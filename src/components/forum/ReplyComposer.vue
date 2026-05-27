@@ -5,10 +5,12 @@ import RichTextEditor from './RichTextEditor.vue'
 
 defineProps<{
   loading?: boolean
+  replyingTo?: { id: string; name: string } | null
 }>()
 
 const emit = defineEmits<{
   submit: [content: string]
+  'cancel-reply': []
 }>()
 
 const content = ref('')
@@ -22,6 +24,10 @@ function handleSubmit() {
   emit('submit', content.value.trim())
   content.value = ''
 }
+
+function handleCancelReply() {
+  emit('cancel-reply')
+}
 </script>
 
 <template>
@@ -33,6 +39,22 @@ function handleSubmit() {
       <span class="mt-1.5 block text-forum-text-soft">
         写下你的排查过程、补充说明或最终答案。
       </span>
+    </div>
+
+    <div
+      v-if="replyingTo"
+      class="mb-3 flex items-center gap-2 rounded bg-[var(--forum-primary-light)] px-3 py-2 text-[0.88rem] text-[var(--forum-primary)]"
+    >
+      <span>回复 @{{ replyingTo.name }}</span>
+      <el-button
+        text
+        size="small"
+        class="ml-auto"
+        aria-label="取消回复"
+        @click="handleCancelReply"
+      >
+        取消
+      </el-button>
     </div>
 
     <RichTextEditor

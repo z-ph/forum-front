@@ -1,0 +1,311 @@
+paths:
+  /topic:
+    post:
+      tags: [Topic]
+      summary: 新增话题
+      operationId: createTopic
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopicCreateRequest"
+      responses:
+        "200":
+          description: 新增成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "新增成功"
+
+  /topic/{id}:
+    delete:
+      tags: [Topic]
+      summary: 删除话题
+      operationId: deleteTopic
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "删除成功"
+    put:
+      tags: [Topic]
+      summary: 修改话题
+      operationId: updateTopic
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopicCreateRequest"
+      responses:
+        "200":
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "修改成功"
+
+  /topic/selectAll:
+    get:
+      tags: [Topic]
+      summary: 获取所有话题列表
+      operationId: selectAllTopics
+      security: []
+      responses:
+        "200":
+          description: 话题列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/TopicVO"
+
+  /topic/page:
+    post:
+      tags: [Topic]
+      summary: 分页查询话题
+      operationId: pageTopics
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopicPageQuery"
+      responses:
+        "200":
+          description: 话题分页数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PageTopicVO"
+
+  /topic/detail/{id}:
+    get:
+      tags: [Topic]
+      summary: 获取话题详情
+      operationId: getTopicDetail
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 话题详情
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/TopicVO"
+
+  /topic/{id}/status:
+    put:
+      tags: [Topic]
+      summary: 修改话题状态（显示/隐藏）
+      operationId: updateTopicStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "修改成功"
+
+  /topic/my:
+    get:
+      tags: [Topic]
+      summary: 获取我的话题列表
+      operationId: getMyTopics
+      parameters:
+        - name: pageNum
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: 我的话题分页数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PageTopicVO"
+
+components:
+  schemas:
+    TopicCreateRequest:
+      type: object
+      required: [categoryId, title, content]
+      properties:
+        categoryId:
+          type: integer
+          format: int64
+          description: 分类ID
+        title:
+          type: string
+          minLength: 1
+          description: 标题
+        content:
+          type: string
+          minLength: 1
+          description: 内容
+        tagIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: 标签ID列表
+
+    TopicPageQuery:
+      type: object
+      properties:
+        parentId:
+          type: integer
+          format: int64
+          description: 父分类ID
+        categoryId:
+          type: integer
+          format: int64
+          description: 分类ID（优先于 parentId）
+        tagId:
+          type: integer
+          format: int64
+          description: 标签ID
+        pageNum:
+          type: integer
+          default: 1
+        pageSize:
+          type: integer
+          default: 10
+
+    TopicVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        categoryId:
+          type: integer
+          format: int64
+        categoryName:
+          type: string
+        creatorId:
+          type: integer
+          format: int64
+        creatorNickname:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        status:
+          type: integer
+          description: "0=隐藏，1=正常"
+        viewCount:
+          type: integer
+        replyCount:
+          type: integer
+        createTime:
+          type: string
+          format: date-time
+        updateTime:
+          type: string
+          format: date-time
+        isDeleted:
+          type: integer
+          description: "0=未删除，1=已删除"
+        tags:
+          type: array
+          items:
+            $ref: "./tag.yaml#/components/schemas/TagVO"
+
+    PageTopicVO:
+      allOf:
+        - $ref: "./common.yaml#/components/schemas/PageInfo"
+        - type: object
+          properties:
+            records:
+              type: array
+              items:
+                $ref: "#/components/schemas/TopicVO"

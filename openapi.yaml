@@ -3,17 +3,17 @@ info:
   title: Forum Backend API
   description: |
     论坛后端 REST API 接口文档
-    
-    **后端版本**: commit `c0d8f34ae48b1c33c1d31cd8f110c7c69eb99779` (master)
-    日期: 2026-05-21
-    
+
+    **后端版本**: commit `bc37810` (master)
+    日期: 2026-05-23
+
     ## 通用说明
     - 所有响应统一包裹在 `Result<T>` 中: `{ code: 1, msg: "success", data: T }`
     - `code=1` 表示成功，其他值表示错误
     - 分页接口返回 `Page<T>`: `{ records: T[], total, size, current, pages }`
     - 需要认证的接口在 `Authorization` header 中传入 `Bearer <jwt_token>`
     - 日期格式: `yyyy-MM-dd HH:mm:ss` (LocalDateTime), `yyyy-MM-dd` (LocalDate)
-  version: "c0d8f34ae48b1c33c1d31cd8f110c7c69eb99779"
+  version: "bc37810"
   contact:
     name: Backend Team
 
@@ -23,1272 +23,123 @@ security:
 paths:
   # ==================== User ====================
   /user/register:
-    post:
-      tags: [User]
-      summary: 用户注册
-      operationId: register
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RegisterRequest"
-      responses:
-        "200":
-          description: 注册成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "注册成功"
-
+    $ref: "./openapi/user.yaml#/paths/~1user~1register"
   /user/login:
-    post:
-      tags: [User]
-      summary: 用户登录
-      operationId: login
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/LoginRequest"
-      responses:
-        "200":
-          description: 登录成功，返回 JWT token
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        description: JWT token
-
+    $ref: "./openapi/user.yaml#/paths/~1user~1login"
   /user/me:
-    get:
-      tags: [User]
-      summary: 获取当前登录用户信息
-      operationId: getCurrentUser
-      responses:
-        "200":
-          description: 当前用户信息
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/UserVO"
-
+    $ref: "./openapi/user.yaml#/paths/~1user~1me"
   /user/update:
-    put:
-      tags: [User]
-      summary: 更新用户信息（支持头像上传）
-      operationId: updateUser
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                id:
-                  type: integer
-                  format: int64
-                  description: 用户ID
-                avatar:
-                  type: string
-                  format: binary
-                  description: 头像文件
-                nickname:
-                  type: string
-                  description: 昵称
-                email:
-                  type: string
-                  format: email
-                  description: 邮箱
-              required: [id]
-      responses:
-        "200":
-          description: 修改成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "修改成功"
-
+    $ref: "./openapi/user.yaml#/paths/~1user~1update"
   /user/{id}/status:
-    put:
-      tags: [User]
-      summary: 修改用户状态（启用/禁用）
-      operationId: updateUserStatus
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: status
-          in: query
-          required: true
-          schema:
-            type: boolean
-      responses:
-        "200":
-          description: 修改成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "修改成功"
-
+    $ref: "./openapi/user.yaml#/paths/~1user~1{id}~1status"
   /user/page:
-    post:
-      tags: [User]
-      summary: 分页查询用户列表
-      operationId: pageUsers
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserPageQuery"
-      responses:
-        "200":
-          description: 用户分页数据
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/PageUserVO"
+    $ref: "./openapi/user.yaml#/paths/~1user~1page"
 
   # ==================== Topic ====================
   /topic:
-    post:
-      tags: [Topic]
-      summary: 新增话题
-      operationId: createTopic
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TopicCreateRequest"
-      responses:
-        "200":
-          description: 新增成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "新增成功"
-
+    $ref: "./openapi/topic.yaml#/paths/~1topic"
   /topic/{id}:
-    delete:
-      tags: [Topic]
-      summary: 删除话题
-      operationId: deleteTopic
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "200":
-          description: 删除成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "删除成功"
-    put:
-      tags: [Topic]
-      summary: 修改话题
-      operationId: updateTopic
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TopicCreateRequest"
-      responses:
-        "200":
-          description: 修改成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "修改成功"
-
+    $ref: "./openapi/topic.yaml#/paths/~1topic~1{id}"
   /topic/selectAll:
-    get:
-      tags: [Topic]
-      summary: 获取所有话题列表
-      operationId: selectAllTopics
-      security: []
-      responses:
-        "200":
-          description: 话题列表
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/TopicVO"
-
+    $ref: "./openapi/topic.yaml#/paths/~1topic~1selectAll"
   /topic/page:
-    post:
-      tags: [Topic]
-      summary: 分页查询话题
-      operationId: pageTopics
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TopicPageQuery"
-      responses:
-        "200":
-          description: 话题分页数据
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/PageTopicVO"
-
+    $ref: "./openapi/topic.yaml#/paths/~1topic~1page"
   /topic/detail/{id}:
-    get:
-      tags: [Topic]
-      summary: 获取话题详情
-      operationId: getTopicDetail
-      security: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "200":
-          description: 话题详情
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/TopicVO"
-
+    $ref: "./openapi/topic.yaml#/paths/~1topic~1detail~1{id}"
   /topic/{id}/status:
-    put:
-      tags: [Topic]
-      summary: 修改话题状态（显示/隐藏）
-      operationId: updateTopicStatus
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: status
-          in: query
-          required: true
-          schema:
-            type: boolean
-      responses:
-        "200":
-          description: 修改成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "修改成功"
-
+    $ref: "./openapi/topic.yaml#/paths/~1topic~1{id}~1status"
   /topic/my:
-    get:
-      tags: [Topic]
-      summary: 获取我的话题列表
-      operationId: getMyTopics
-      parameters:
-        - name: pageNum
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: pageSize
-          in: query
-          schema:
-            type: integer
-            default: 10
-      responses:
-        "200":
-          description: 我的话题分页数据
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/PageTopicVO"
+    $ref: "./openapi/topic.yaml#/paths/~1topic~1my"
 
   # ==================== Tag ====================
   /tag:
-    post:
-      tags: [Tag]
-      summary: 新增标签
-      operationId: createTag
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TagCreateRequest"
-      responses:
-        "200":
-          description: 新增成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "新增成功"
-
+    $ref: "./openapi/tag.yaml#/paths/~1tag"
   /tag/{id}:
-    delete:
-      tags: [Tag]
-      summary: 删除标签
-      operationId: deleteTag
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "200":
-          description: 删除成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "删除成功"
-    put:
-      tags: [Tag]
-      summary: 修改标签
-      operationId: updateTag
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TagCreateRequest"
-      responses:
-        "200":
-          description: 修改成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "修改成功"
-
+    $ref: "./openapi/tag.yaml#/paths/~1tag~1{id}"
   /tag/selectAll:
-    get:
-      tags: [Tag]
-      summary: 获取所有标签
-      operationId: selectAllTags
-      security: []
-      responses:
-        "200":
-          description: 标签列表
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/TagVO"
-
+    $ref: "./openapi/tag.yaml#/paths/~1tag~1selectAll"
   /tag/search:
-    get:
-      tags: [Tag]
-      summary: 按名称搜索标签
-      operationId: searchTags
-      security: []
-      parameters:
-        - name: name
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: 匹配的标签列表
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/TagVO"
+    $ref: "./openapi/tag.yaml#/paths/~1tag~1search"
 
   # ==================== Reply ====================
   /reply:
-    post:
-      tags: [Reply]
-      summary: 新增回复
-      operationId: createReply
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ReplyCreateRequest"
-      responses:
-        "200":
-          description: 新增成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "新增成功"
-
+    $ref: "./openapi/reply.yaml#/paths/~1reply"
   /reply/{id}:
-    delete:
-      tags: [Reply]
-      summary: 删除回复
-      operationId: deleteReply
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "200":
-          description: 删除成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "删除成功"
-
+    $ref: "./openapi/reply.yaml#/paths/~1reply~1{id}"
   /reply/top/page:
-    post:
-      tags: [Reply]
-      summary: 分页查询话题的顶级回复
-      operationId: pageTopReplies
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ReplyTopPageQuery"
-      responses:
-        "200":
-          description: 顶级回复分页数据
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/PageReplyVO"
-
+    $ref: "./openapi/reply.yaml#/paths/~1reply~1top~1page"
   /reply/child/page:
-    post:
-      tags: [Reply]
-      summary: 分页查询子回复
-      operationId: pageChildReplies
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ReplyChildPageQuery"
-      responses:
-        "200":
-          description: 子回复分页数据
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/PageReplyVO"
-
+    $ref: "./openapi/reply.yaml#/paths/~1reply~1child~1page"
   /reply/my:
-    get:
-      tags: [Reply]
-      summary: 获取我的回复列表
-      operationId: getMyReplies
-      parameters:
-        - name: pageNum
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: pageSize
-          in: query
-          schema:
-            type: integer
-            default: 10
-      responses:
-        "200":
-          description: 我的回复分页数据
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/PageReplyVO"
+    $ref: "./openapi/reply.yaml#/paths/~1reply~1my"
 
   # ==================== Category ====================
   /category:
-    post:
-      tags: [Category]
-      summary: 新增分类
-      operationId: createCategory
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CategoryCreateRequest"
-      responses:
-        "200":
-          description: 新增成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "新增成功"
-
+    $ref: "./openapi/category.yaml#/paths/~1category"
   /category/{id}:
-    put:
-      tags: [Category]
-      summary: 编辑分类
-      operationId: updateCategory
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CategoryCreateRequest"
-      responses:
-        "200":
-          description: 编辑成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "编辑成功"
-    delete:
-      tags: [Category]
-      summary: 删除分类
-      operationId: deleteCategory
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "200":
-          description: 删除成功
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: string
-                        example: "删除成功"
-
+    $ref: "./openapi/category.yaml#/paths/~1category~1{id}"
   /category/parents:
-    get:
-      tags: [Category]
-      summary: 获取所有父级分类
-      operationId: listParentCategories
-      security: []
-      responses:
-        "200":
-          description: 父级分类列表
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/CategoryVO"
-
+    $ref: "./openapi/category.yaml#/paths/~1category~1parents"
   /category/children/{parentId}:
-    get:
-      tags: [Category]
-      summary: 获取子分类列表
-      operationId: listChildCategories
-      security: []
-      parameters:
-        - name: parentId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "200":
-          description: 子分类列表
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/CategoryVO"
-
+    $ref: "./openapi/category.yaml#/paths/~1category~1children~1{parentId}"
   /category/search:
-    get:
-      tags: [Category]
-      summary: 按名称搜索分类
-      operationId: searchCategories
-      security: []
-      parameters:
-        - name: name
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: 匹配的分类列表
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/CategoryVO"
-
+    $ref: "./openapi/category.yaml#/paths/~1category~1search"
   /category/selectAll:
-    get:
-      tags: [Category]
-      summary: 获取所有分类（树形结构）
-      operationId: selectAllCategories
-      security: []
-      responses:
-        "200":
-          description: 分类树
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/ApiResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/CategoryTreeVO"
+    $ref: "./openapi/category.yaml#/paths/~1category~1selectAll"
 
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: |
-        在登录接口获取 JWT token，后续请求在 Authorization header 中传入。
-        无需认证的接口: /user/register, /user/login, /topic/selectAll, /topic/page, 
-        /topic/detail/{id}, /tag/selectAll, /tag/search, /reply/top/page, /reply/child/page,
-        /category/parents, /category/children/{parentId}, /category/search, /category/selectAll
-
+    $ref: "./openapi/common.yaml#/components/securitySchemes"
   schemas:
-    # ==================== Generic ====================
     ApiResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          description: "状态码，1=成功"
-          example: 1
-        msg:
-          type: string
-          description: 提示信息
-          example: "success"
-        data:
-          description: 响应数据
-
+      $ref: "./openapi/common.yaml#/components/schemas/ApiResponse"
     PageInfo:
-      type: object
-      properties:
-        records:
-          type: array
-          description: 当前页数据
-        total:
-          type: integer
-          format: int64
-          description: 总记录数
-        size:
-          type: integer
-          format: int64
-          description: 每页大小
-        current:
-          type: integer
-          format: int64
-          description: 当前页码
-        pages:
-          type: integer
-          format: int64
-          description: 总页数
+      $ref: "./openapi/common.yaml#/components/schemas/PageInfo"
+    UserRole:
+      $ref: "./openapi/common.yaml#/components/schemas/UserRole"
 
-    # ==================== Request Schemas ====================
     RegisterRequest:
-      type: object
-      required: [username, email, nickname, password]
-      properties:
-        username:
-          type: string
-          minLength: 1
-          description: 用户名
-        email:
-          type: string
-          format: email
-          description: 邮箱
-        nickname:
-          type: string
-          minLength: 1
-          description: 昵称
-        password:
-          type: string
-          minLength: 6
-          description: 密码（至少6位）
-
+      $ref: "./openapi/user.yaml#/components/schemas/RegisterRequest"
     LoginRequest:
-      type: object
-      required: [email, password]
-      properties:
-        email:
-          type: string
-          format: email
-          description: 邮箱
-        password:
-          type: string
-          minLength: 1
-          description: 密码
-
+      $ref: "./openapi/user.yaml#/components/schemas/LoginRequest"
     UserPageQuery:
-      type: object
-      properties:
-        username:
-          type: string
-          description: 用户名（模糊匹配）
-        email:
-          type: string
-          description: 邮箱（模糊匹配）
-        status:
-          type: integer
-          description: "状态：1=启用，0=禁用"
-        createTimeStart:
-          type: string
-          format: date-time
-          description: 创建时间起始
-        createTimeEnd:
-          type: string
-          format: date-time
-          description: 创建时间截止
-        pageNum:
-          type: integer
-          default: 1
-        pageSize:
-          type: integer
-          default: 10
+      $ref: "./openapi/user.yaml#/components/schemas/UserPageQuery"
+    UserVO:
+      $ref: "./openapi/user.yaml#/components/schemas/UserVO"
+    PageUserVO:
+      $ref: "./openapi/user.yaml#/components/schemas/PageUserVO"
 
     TopicCreateRequest:
-      type: object
-      required: [categoryId, title, content]
-      properties:
-        categoryId:
-          type: integer
-          format: int64
-          description: 分类ID
-        title:
-          type: string
-          minLength: 1
-          description: 标题
-        content:
-          type: string
-          minLength: 1
-          description: 内容
-        tagIds:
-          type: array
-          items:
-            type: integer
-            format: int64
-          description: 标签ID列表
-
+      $ref: "./openapi/topic.yaml#/components/schemas/TopicCreateRequest"
     TopicPageQuery:
-      type: object
-      properties:
-        parentId:
-          type: integer
-          format: int64
-          description: 父分类ID
-        categoryId:
-          type: integer
-          format: int64
-          description: 分类ID（优先于 parentId）
-        tagId:
-          type: integer
-          format: int64
-          description: 标签ID
-        pageNum:
-          type: integer
-          default: 1
-        pageSize:
-          type: integer
-          default: 10
+      $ref: "./openapi/topic.yaml#/components/schemas/TopicPageQuery"
+    TopicVO:
+      $ref: "./openapi/topic.yaml#/components/schemas/TopicVO"
+    PageTopicVO:
+      $ref: "./openapi/topic.yaml#/components/schemas/PageTopicVO"
 
     TagCreateRequest:
-      type: object
-      required: [name]
-      properties:
-        name:
-          type: string
-          minLength: 1
-          description: 标签名称
+      $ref: "./openapi/tag.yaml#/components/schemas/TagCreateRequest"
+    TagVO:
+      $ref: "./openapi/tag.yaml#/components/schemas/TagVO"
 
     ReplyCreateRequest:
-      type: object
-      required: [topicId, content]
-      properties:
-        topicId:
-          type: integer
-          format: int64
-          description: 话题ID
-        parentReplyId:
-          type: integer
-          format: int64
-          description: "父回复ID，顶级回复传0或不传"
-        content:
-          type: string
-          minLength: 1
-          description: 回复内容
-
+      $ref: "./openapi/reply.yaml#/components/schemas/ReplyCreateRequest"
     ReplyTopPageQuery:
-      type: object
-      required: [topicId]
-      properties:
-        topicId:
-          type: integer
-          format: int64
-          description: 话题ID
-        pageNum:
-          type: integer
-          default: 1
-        pageSize:
-          type: integer
-          default: 10
-
+      $ref: "./openapi/reply.yaml#/components/schemas/ReplyTopPageQuery"
     ReplyChildPageQuery:
-      type: object
-      required: [parentReplyId]
-      properties:
-        parentReplyId:
-          type: integer
-          format: int64
-          description: 父回复ID
-        pageNum:
-          type: integer
-          default: 1
-        pageSize:
-          type: integer
-          default: 10
+      $ref: "./openapi/reply.yaml#/components/schemas/ReplyChildPageQuery"
+    ReplyVO:
+      $ref: "./openapi/reply.yaml#/components/schemas/ReplyVO"
+    PageReplyVO:
+      $ref: "./openapi/reply.yaml#/components/schemas/PageReplyVO"
 
     CategoryCreateRequest:
-      type: object
-      required: [parentId, name]
-      properties:
-        parentId:
-          type: integer
-          format: int64
-          description: "父分类ID，顶级分类传0"
-        name:
-          type: string
-          minLength: 1
-          description: 分类名称
-        description:
-          type: string
-          description: 分类描述
-
-    # ==================== Response Schemas ====================
-    UserVO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        username:
-          type: string
-        email:
-          type: string
-        nickname:
-          type: string
-        avatar:
-          type: string
-        role:
-          $ref: "#/components/schemas/UserRole"
-        status:
-          type: integer
-          description: "1=启用，0=禁用"
-        createTime:
-          type: string
-          format: date-time
-        updateTime:
-          type: string
-          format: date-time
-
-    TopicVO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        categoryId:
-          type: integer
-          format: int64
-        categoryName:
-          type: string
-        creatorId:
-          type: integer
-          format: int64
-        creatorNickname:
-          type: string
-        title:
-          type: string
-        content:
-          type: string
-        status:
-          type: integer
-          description: "0=隐藏，1=正常"
-        viewCount:
-          type: integer
-        replyCount:
-          type: integer
-        createTime:
-          type: string
-          format: date-time
-        updateTime:
-          type: string
-          format: date-time
-        isDeleted:
-          type: integer
-          description: "0=未删除，1=已删除"
-        tags:
-          type: array
-          items:
-            $ref: "#/components/schemas/TagVO"
-
-    TagVO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        creatorId:
-          type: integer
-          format: int64
-        creatorNickname:
-          type: string
-        createTime:
-          type: string
-          format: date-time
-        updateTime:
-          type: string
-          format: date-time
-        isDeleted:
-          type: integer
-
-    ReplyVO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        topicId:
-          type: integer
-          format: int64
-        creatorId:
-          type: integer
-          format: int64
-        creatorNickname:
-          type: string
-        parentReplyId:
-          type: integer
-          format: int64
-        replyToUserId:
-          type: integer
-          format: int64
-        replyToUserNickname:
-          type: string
-        content:
-          type: string
-        createTime:
-          type: string
-          format: date-time
-        updateTime:
-          type: string
-          format: date-time
-        isDeleted:
-          type: integer
-
+      $ref: "./openapi/category.yaml#/components/schemas/CategoryCreateRequest"
     CategoryVO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        parentId:
-          type: integer
-          format: int64
-        name:
-          type: string
-        description:
-          type: string
-        creatorId:
-          type: integer
-          format: int64
-        creatorNickname:
-          type: string
-        createTime:
-          type: string
-          format: date-time
-        updateTime:
-          type: string
-          format: date-time
-        isDeleted:
-          type: integer
-
+      $ref: "./openapi/category.yaml#/components/schemas/CategoryVO"
     CategoryTreeVO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        parentId:
-          type: integer
-          format: int64
-        name:
-          type: string
-        description:
-          type: string
-        creatorId:
-          type: integer
-          format: int64
-        creatorNickname:
-          type: string
-        createTime:
-          type: string
-          format: date-time
-        updateTime:
-          type: string
-          format: date-time
-        isDeleted:
-          type: integer
-        children:
-          type: array
-          items:
-            $ref: "#/components/schemas/CategoryTreeVO"
-
-    # ==================== Paginated Response Schemas ====================
-    PageUserVO:
-      allOf:
-        - $ref: "#/components/schemas/PageInfo"
-        - type: object
-          properties:
-            records:
-              type: array
-              items:
-                $ref: "#/components/schemas/UserVO"
-
-    PageTopicVO:
-      allOf:
-        - $ref: "#/components/schemas/PageInfo"
-        - type: object
-          properties:
-            records:
-              type: array
-              items:
-                $ref: "#/components/schemas/TopicVO"
-
-    PageReplyVO:
-      allOf:
-        - $ref: "#/components/schemas/PageInfo"
-        - type: object
-          properties:
-            records:
-              type: array
-              items:
-                $ref: "#/components/schemas/ReplyVO"
-
-    # ==================== Enums ====================
-    UserRole:
-      type: string
-      enum: [USER, ADMIN]
+      $ref: "./openapi/category.yaml#/components/schemas/CategoryTreeVO"
 
 tags:
   - name: User

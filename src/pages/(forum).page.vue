@@ -62,7 +62,6 @@ const {
           :summary-title="summaryTitle"
           :summary-hint="summaryHint"
           :result-count="topics.length"
-          @compose="handleCompose"
           @update:active-category-id="updateCategory"
           @update:active-tag="updateTag"
         />

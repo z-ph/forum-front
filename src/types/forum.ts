@@ -22,26 +22,27 @@ export interface ForumReply {
   author: ForumUser
   content: string
   createdAt: string
-  likes: number
-  isSolution?: boolean
+  parentReplyId?: string
+  replyToUserId?: string
+  replyToUserNickname?: string
+  childCount?: number
+  children?: ForumReply[]
 }
 
 export interface ForumTopic {
   id: string
   title: string
   content: string
-  categoryId: string
-  categoryName: string
+  categoryId?: string
+  categoryName?: string
   author: ForumUser
   createdAt: string
   updatedAt: string
   views: number
-  likes: number
   repliesCount: number
   tags: string[]
-  pinned?: boolean
-  solved?: boolean
   preview: string
+  status?: number
 }
 
 export type ForumTopicFeed = 'categories' | 'latest'
@@ -57,18 +58,20 @@ export interface AuthPayload {
 
 export interface RegisterPayload extends AuthPayload {
   nickname: string
+  email: string
 }
 
 export interface CreateTopicPayload {
   title: string
   content: string
-  categoryId: string
-  tags: string[]
+  categoryId?: string
+  tags?: string[]
 }
 
 export interface CreateReplyPayload {
   topicId: string
   content: string
+  parentReplyId?: string
 }
 
 export interface ForumHomeData {

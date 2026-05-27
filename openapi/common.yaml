@@ -1,0 +1,58 @@
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT 认证说明:
+        - 默认拒绝: 所有接口默认需要 JWT token，在 Authorization header 中传入 `Bearer <token>`
+        - 公开路径白名单: 以下接口无需认证，其他接口均需 token
+          用户: /user/register, /user/login
+          话题: /topic/selectAll, /topic/page, /topic/detail/{id}
+          标签: /tag/selectAll, /tag/search
+          回复: /reply/top/page, /reply/child/page
+          分类: /category/parents, /category/children/{parentId}, /category/search, /category/selectAll
+        - 角色控制: 部分接口需要 ADMIN 角色（如用户状态管理、分类/标签管理）
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: "状态码，1=成功"
+          example: 1
+        msg:
+          type: string
+          description: 提示信息
+          example: "success"
+        data:
+          description: 响应数据
+
+    PageInfo:
+      type: object
+      properties:
+        records:
+          type: array
+          description: 当前页数据
+        total:
+          type: integer
+          format: int64
+          description: 总记录数
+        size:
+          type: integer
+          format: int64
+          description: 每页大小
+        current:
+          type: integer
+          format: int64
+          description: 当前页码
+        pages:
+          type: integer
+          format: int64
+          description: 总页数
+
+    UserRole:
+      type: string
+      enum: [USER, ADMIN]
