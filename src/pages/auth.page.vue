@@ -8,9 +8,11 @@ const router = useRouter()
 const mode = ref<'login' | 'register'>('login')
 const loginMutation = useLoginMutation()
 const registerMutation = useRegisterMutation()
+const isAuthPending = computed(() => loginMutation.isPending.value || registerMutation.isPending.value)
 
 const form = reactive({
   nickname: '',
+  email: '',
   username: '',
   password: '',
 })
@@ -38,6 +40,7 @@ async function handleSubmit() {
     } else {
       await registerMutation.mutateAsync({
         nickname: form.nickname,
+        email: form.email,
         username: form.username,
         password: form.password,
       })
@@ -115,6 +118,10 @@ async function handleSubmit() {
             <el-input v-model="form.nickname" placeholder="例如：周可" />
           </el-form-item>
 
+          <el-form-item v-if="mode === 'register'" label="邮箱">
+            <el-input v-model="form.email" type="email" placeholder="例如：zhouke@example.com" />
+          </el-form-item>
+
           <el-form-item label="用户名">
             <el-input v-model="form.username" placeholder="例如：zhouke" />
           </el-form-item>
@@ -127,7 +134,7 @@ async function handleSubmit() {
             <el-button text @click="router.push({ path: '/' })">返回论坛</el-button>
             <el-button
               type="primary"
-              :loading="loginMutation.isPending.value || registerMutation.isPending.value"
+              :loading="isAuthPending"
               @click="handleSubmit"
             >
               {{ mode === 'login' ? '登录' : '注册并进入论坛' }}

@@ -1,0 +1,266 @@
+paths:
+  /user/register:
+    post:
+      tags: [User]
+      summary: 用户注册
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "注册成功"
+
+  /user/login:
+    post:
+      tags: [User]
+      summary: 用户登录
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: 登录成功，返回 JWT token
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        description: JWT token
+
+  /user/me:
+    get:
+      tags: [User]
+      summary: 获取当前登录用户信息
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: 当前用户信息
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserVO"
+
+  /user/update:
+    put:
+      tags: [User]
+      summary: 更新用户信息（支持头像上传）
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: int64
+                  description: 用户ID
+                avatar:
+                  type: string
+                  format: binary
+                  description: 头像文件
+                nickname:
+                  type: string
+                  description: 昵称
+                email:
+                  type: string
+                  format: email
+                  description: 邮箱
+              required: [id]
+      responses:
+        "200":
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "修改成功"
+
+  /user/{id}/status:
+    put:
+      tags: [User]
+      summary: 修改用户状态（启用/禁用）
+      operationId: updateUserStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "修改成功"
+
+  /user/page:
+    post:
+      tags: [User]
+      summary: 分页查询用户列表
+      operationId: pageUsers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserPageQuery"
+      responses:
+        "200":
+          description: 用户分页数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PageUserVO"
+
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [username, email, nickname, password]
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: 用户名
+        email:
+          type: string
+          format: email
+          description: 邮箱
+        nickname:
+          type: string
+          minLength: 1
+          description: 昵称
+        password:
+          type: string
+          minLength: 6
+          description: 密码（至少6位）
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          description: 邮箱
+        password:
+          type: string
+          minLength: 1
+          description: 密码
+
+    UserPageQuery:
+      type: object
+      properties:
+        username:
+          type: string
+          description: 用户名（模糊匹配）
+        email:
+          type: string
+          description: 邮箱（模糊匹配）
+        status:
+          type: integer
+          description: "状态：1=启用，0=禁用"
+        createTimeStart:
+          type: string
+          format: date-time
+          description: 创建时间起始
+        createTimeEnd:
+          type: string
+          format: date-time
+          description: 创建时间截止
+        pageNum:
+          type: integer
+          default: 1
+        pageSize:
+          type: integer
+          default: 10
+
+    UserVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+        nickname:
+          type: string
+        avatar:
+          type: string
+        role:
+          $ref: "./common.yaml#/components/schemas/UserRole"
+        status:
+          type: integer
+          description: "1=启用，0=禁用"
+        createTime:
+          type: string
+          format: date-time
+        updateTime:
+          type: string
+          format: date-time
+
+    PageUserVO:
+      allOf:
+        - $ref: "./common.yaml#/components/schemas/PageInfo"
+        - type: object
+          properties:
+            records:
+              type: array
+              items:
+                $ref: "#/components/schemas/UserVO"

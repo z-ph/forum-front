@@ -19,17 +19,13 @@ function parseForumDate(value: string) {
 
 function sortLatest(topics: ForumTopic[]) {
   return [...topics].sort((left, right) => {
-    if (!!left.pinned !== !!right.pinned) {
-      return Number(!!right.pinned) - Number(!!left.pinned)
-    }
-
     return parseForumDate(right.updatedAt) - parseForumDate(left.updatedAt)
   })
 }
 
 function sortByCategory(topics: ForumTopic[]) {
   return [...topics].sort((left, right) => {
-    const categoryCompare = left.categoryName.localeCompare(right.categoryName, 'zh-CN')
+    const categoryCompare = (left.categoryName ?? '').localeCompare(right.categoryName ?? '', 'zh-CN')
 
     if (categoryCompare !== 0) {
       return categoryCompare

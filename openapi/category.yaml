@@ -1,0 +1,254 @@
+paths:
+  /category:
+    post:
+      tags: [Category]
+      summary: 新增分类
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryCreateRequest"
+      responses:
+        "200":
+          description: 新增成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "新增成功"
+
+  /category/{id}:
+    put:
+      tags: [Category]
+      summary: 编辑分类
+      operationId: updateCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryCreateRequest"
+      responses:
+        "200":
+          description: 编辑成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "编辑成功"
+    delete:
+      tags: [Category]
+      summary: 删除分类
+      operationId: deleteCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "删除成功"
+
+  /category/parents:
+    get:
+      tags: [Category]
+      summary: 获取所有父级分类
+      operationId: listParentCategories
+      security: []
+      responses:
+        "200":
+          description: 父级分类列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CategoryVO"
+
+  /category/children/{parentId}:
+    get:
+      tags: [Category]
+      summary: 获取子分类列表
+      operationId: listChildCategories
+      security: []
+      parameters:
+        - name: parentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 子分类列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CategoryVO"
+
+  /category/search:
+    get:
+      tags: [Category]
+      summary: 按名称搜索分类
+      operationId: searchCategories
+      security: []
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 匹配的分类列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CategoryVO"
+
+  /category/selectAll:
+    get:
+      tags: [Category]
+      summary: 获取所有分类（树形结构）
+      operationId: selectAllCategories
+      security: []
+      responses:
+        "200":
+          description: 分类树
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CategoryTreeVO"
+
+components:
+  schemas:
+    CategoryCreateRequest:
+      type: object
+      required: [parentId, name]
+      properties:
+        parentId:
+          type: integer
+          format: int64
+          description: "父分类ID，顶级分类传0"
+        name:
+          type: string
+          minLength: 1
+          description: 分类名称
+        description:
+          type: string
+          description: 分类描述
+
+    CategoryVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        parentId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        creatorId:
+          type: integer
+          format: int64
+        creatorNickname:
+          type: string
+        createTime:
+          type: string
+          format: date-time
+        updateTime:
+          type: string
+          format: date-time
+        isDeleted:
+          type: integer
+
+    CategoryTreeVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        parentId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        creatorId:
+          type: integer
+          format: int64
+        creatorNickname:
+          type: string
+        createTime:
+          type: string
+          format: date-time
+        updateTime:
+          type: string
+          format: date-time
+        isDeleted:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryTreeVO"

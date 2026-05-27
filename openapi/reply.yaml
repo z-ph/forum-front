@@ -1,0 +1,222 @@
+paths:
+  /reply:
+    post:
+      tags: [Reply]
+      summary: 新增回复
+      operationId: createReply
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplyCreateRequest"
+      responses:
+        "200":
+          description: 新增成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "新增成功"
+
+  /reply/{id}:
+    delete:
+      tags: [Reply]
+      summary: 删除回复
+      operationId: deleteReply
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "删除成功"
+
+  /reply/top/page:
+    post:
+      tags: [Reply]
+      summary: 分页查询话题的顶级回复
+      operationId: pageTopReplies
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplyTopPageQuery"
+      responses:
+        "200":
+          description: 顶级回复分页数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PageReplyVO"
+
+  /reply/child/page:
+    post:
+      tags: [Reply]
+      summary: 分页查询子回复
+      operationId: pageChildReplies
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplyChildPageQuery"
+      responses:
+        "200":
+          description: 子回复分页数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PageReplyVO"
+
+  /reply/my:
+    get:
+      tags: [Reply]
+      summary: 获取我的回复列表
+      operationId: getMyReplies
+      parameters:
+        - name: pageNum
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: 我的回复分页数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PageReplyVO"
+
+components:
+  schemas:
+    ReplyCreateRequest:
+      type: object
+      required: [topicId, content]
+      properties:
+        topicId:
+          type: integer
+          format: int64
+          description: 话题ID
+        parentReplyId:
+          type: integer
+          format: int64
+          description: "父回复ID，顶级回复传0或不传"
+        content:
+          type: string
+          minLength: 1
+          description: 回复内容
+
+    ReplyTopPageQuery:
+      type: object
+      required: [topicId]
+      properties:
+        topicId:
+          type: integer
+          format: int64
+          description: 话题ID
+        pageNum:
+          type: integer
+          default: 1
+        pageSize:
+          type: integer
+          default: 10
+
+    ReplyChildPageQuery:
+      type: object
+      required: [parentReplyId]
+      properties:
+        parentReplyId:
+          type: integer
+          format: int64
+          description: 父回复ID
+        pageNum:
+          type: integer
+          default: 1
+        pageSize:
+          type: integer
+          default: 10
+
+    ReplyVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        topicId:
+          type: integer
+          format: int64
+        creatorId:
+          type: integer
+          format: int64
+        creatorNickname:
+          type: string
+        parentReplyId:
+          type: integer
+          format: int64
+        replyToUserId:
+          type: integer
+          format: int64
+        replyToUserNickname:
+          type: string
+        content:
+          type: string
+        createTime:
+          type: string
+          format: date-time
+        updateTime:
+          type: string
+          format: date-time
+        isDeleted:
+          type: integer
+
+    PageReplyVO:
+      allOf:
+        - $ref: "./common.yaml#/components/schemas/PageInfo"
+        - type: object
+          properties:
+            records:
+              type: array
+              items:
+                $ref: "#/components/schemas/ReplyVO"

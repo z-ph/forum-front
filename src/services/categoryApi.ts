@@ -59,3 +59,19 @@ export async function getAllCategoriesTree(): Promise<ApiResponse<CategoryTreeVO
   const response = await apiClient.get<ApiResponse<CategoryTreeVO[]>>('/category/selectAll')
   return response.data
 }
+
+/** Flatten a category tree into a flat array, stripping the children property. */
+export function flattenCategoryTree(tree: CategoryTreeVO[]): CategoryVO[] {
+  const result: CategoryVO[] = []
+  function walk(nodes: CategoryTreeVO[]) {
+    for (const node of nodes) {
+      const { children, ...category } = node
+      result.push(category as CategoryVO)
+      if (children && children.length > 0) {
+        walk(children)
+      }
+    }
+  }
+  walk(tree)
+  return result
+}

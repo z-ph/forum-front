@@ -98,11 +98,8 @@ let topics: ForumTopicDetail[] = [
     createdAt: '2026-05-14 09:20',
     updatedAt: '2026-05-15 08:40',
     views: 320,
-    likes: 28,
     repliesCount: 2,
     tags: ['公告', '规则'],
-    pinned: true,
-    solved: false,
     preview: '发帖前先选择最匹配的分类，标题尽量写清楚问题场景。',
     replies: [
       {
@@ -110,14 +107,12 @@ let topics: ForumTopicDetail[] = [
         author: users[2],
         content: '建议把“如何提问”拆成固定模版，新用户更容易上手。',
         createdAt: '2026-05-14 11:10',
-        likes: 6,
       },
       {
         id: 'r2',
         author: users[0],
         content: '已记录，后续会补一版标准提问模版。',
         createdAt: '2026-05-14 13:05',
-        likes: 9,
       },
     ],
   },
@@ -132,10 +127,8 @@ let topics: ForumTopicDetail[] = [
     createdAt: '2026-05-15 08:10',
     updatedAt: '2026-05-15 10:06',
     views: 148,
-    likes: 11,
     repliesCount: 3,
     tags: ['主控', '串口', '排障'],
-    solved: true,
     preview: '当前现象是设备管理器偶尔闪现端口，但很快消失。',
     replies: [
       {
@@ -144,7 +137,6 @@ let topics: ForumTopicDetail[] = [
         content:
           '先排电源，再排驱动，最后排板载接口。不要一开始就怀疑线材，优先确认系统层有没有稳定识别记录。',
         createdAt: '2026-05-15 09:00',
-        likes: 5,
       },
       {
         id: 'r4',
@@ -152,15 +144,12 @@ let topics: ForumTopicDetail[] = [
         content:
           '建议顺序：换 USB 口 -> 查看设备管理器 -> 卸载残留驱动 -> 重新上电 -> 最后再换主控。这样最省时间。',
         createdAt: '2026-05-15 09:18',
-        likes: 12,
-        isSolution: true,
       },
       {
         id: 'r5',
         author: users[1],
         content: '按这个顺序排掉后，确实是驱动残留问题，已解决。',
         createdAt: '2026-05-15 10:06',
-        likes: 7,
       },
     ],
   },
@@ -175,7 +164,6 @@ let topics: ForumTopicDetail[] = [
     createdAt: '2026-05-14 16:30',
     updatedAt: '2026-05-15 09:00',
     views: 214,
-    likes: 19,
     repliesCount: 2,
     tags: ['vue', 'tanstack-query', '目录结构'],
     preview: '准备把一个简单论坛前端先搭起来，想确认目录结构应该怎么分。',
@@ -186,14 +174,12 @@ let topics: ForumTopicDetail[] = [
         content:
           '先按 pages、components、hooks、services、types 分层是合理的。mock 阶段把副作用收敛在 hooks 和 services，后续接真接口时替换成本最低。',
         createdAt: '2026-05-14 18:20',
-        likes: 10,
       },
       {
         id: 'r7',
         author: users[3],
         content: '如果需要，我可以补一个最小论坛脚手架示例。',
         createdAt: '2026-05-15 09:00',
-        likes: 8,
       },
     ],
   },
@@ -233,7 +219,7 @@ export async function getForumHome(): Promise<ForumHomeData> {
       topicCount: topics.filter((topic) => topic.categoryId === category.id).length,
     })),
     availableTags: getAvailableTags(),
-    topics: topics.map(toListItem).sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned)),
+    topics: topics.map(toListItem),
   }
 }
 
@@ -301,7 +287,7 @@ export async function createTopic(payload: CreateTopicPayload): Promise<ForumTop
   }
 
   const isAdmin = currentUser.role === 'admin'
-  const categoryValue = payload.categoryId.trim()
+  const categoryValue = (payload.categoryId ?? '').trim()
 
   if (!categoryValue) {
     throw new Error('请选择分类')
@@ -324,7 +310,7 @@ export async function createTopic(payload: CreateTopicPayload): Promise<ForumTop
     categories.push(category)
   }
 
-  const normalizedTags = [...new Set(payload.tags.map((tag) => tag.trim()).filter(Boolean))]
+  const normalizedTags = [...new Set((payload.tags ?? []).map((tag) => tag.trim()).filter(Boolean))]
   if (!isAdmin) {
     const availableTags = getAvailableTags()
     const invalidTags = normalizedTags.filter((tag) => !availableTags.includes(tag))
@@ -344,7 +330,6 @@ export async function createTopic(payload: CreateTopicPayload): Promise<ForumTop
     createdAt: now,
     updatedAt: now,
     views: 1,
-    likes: 0,
     repliesCount: 0,
     tags: normalizedTags,
     preview: getRichTextPreview(payload.content),
@@ -373,7 +358,6 @@ export async function createReply(payload: CreateReplyPayload): Promise<ForumRep
     author: currentUser,
     content: payload.content,
     createdAt: new Date().toLocaleString('sv-SE').replace('T', ' '),
-    likes: 0,
   }
 
   topic.replies = [...topic.replies, reply]

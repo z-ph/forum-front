@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { EditPen } from '@element-plus/icons-vue'
 import type { ForumCategory, ForumTopicFeed } from '../../types/forum'
+
+const router = useRouter()
 
 const props = defineProps<{
   categories: ForumCategory[]
@@ -15,7 +18,6 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  compose: []
   'update:activeCategoryId': [value: string]
   'update:activeTag': [value: string]
 }>()
@@ -77,7 +79,7 @@ const sharedQuery = computed(() => ({
           </el-select>
         </div>
 
-        <el-button class="min-h-11 px-4" type="primary" @click="emit('compose')">
+        <el-button class="min-h-11 px-4" type="primary" @click="router.push({ path: '/topics/new' })">
           <el-icon class="mr-1.5">
             <EditPen />
           </el-icon>
