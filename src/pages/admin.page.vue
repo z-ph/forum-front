@@ -1,9 +1,29 @@
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { useAdminAuth } from '../hooks/useAdmin'
 import AdminAccessDenied from '../components/admin/AdminAccessDenied.vue'
 import AdminPageShell from '../components/admin/AdminPageShell.vue'
+import { downloadValidationData, getValidationStats } from '../core/schemas'
 
 const { isLoading, isError, isAdmin, refetch } = useAdminAuth()
+
+const hasFailures = ref(false)
+let checkTimer: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  const stats = getValidationStats()
+  hasFailures.value = Object.keys(stats).length > 0
+  checkTimer = setInterval(() => {
+    const s = getValidationStats()
+    hasFailures.value = Object.keys(s).length > 0
+  }, 10_000)
+})
+onUnmounted(() => clearInterval(checkTimer))
+
+function handleDownload() {
+  downloadValidationData()
+  ElMessage.success('校验数据已下载')
+}
 </script>
 
 <script lang="ts">
@@ -52,6 +72,14 @@ const navItems = [
                 {{ item.label }}
               </RouterLink>
             </nav>
+            <el-button
+              v-if="hasFailures"
+              size="small"
+              class="ml-2"
+              @click="handleDownload"
+            >
+              导出校验数据
+            </el-button>
           </template>
 
           <RouterView />

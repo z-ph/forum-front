@@ -3,17 +3,11 @@ import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
+import ReplyChildSection from '../components/forum/ReplyChildSection.vue'
 import ReplyComposer from '../components/forum/ReplyComposer.vue'
 import RichTextRenderer from '../components/forum/RichTextRenderer.vue'
 import { useCreateReplyMutation, useTopicDetailQuery } from '../hooks/useForum'
-import * as replyApi from '../services/replyApi'
-import {
-  buildUserMap,
-  extendUserMapFromReplies,
-  toForumReply,
-} from '../services/forumAdapter'
 import type { ForumReply } from '../types/forum'
-import { isApiSuccess } from '../core/apiClient'
 
 const route = useRoute('/topics.[id]')
 const router = useRouter()
@@ -26,14 +20,6 @@ const isReplyPending = computed(() => replyMutation.isPending.value)
 const replyingTo = ref<{ id: string; name: string } | null>(null)
 
 const expandedReplies = ref<Record<string, boolean>>({})
-const childRepliesMap = ref<Record<string, ForumReply[]>>({})
-const childTotalMap = ref<Record<string, number>>({})
-const childPagesMap = ref<Record<string, number>>({})
-
-// TODO: Migrate child reply fetching from manual refs (childRepliesMap,
-// childTotalMap, childPagesMap) to TanStack Query useInfiniteQuery. The
-// current manual approach works correctly but doesn't benefit from
-// TanStack Query's caching and deduplication.
 
 async function handleReply(content: string) {
   if (!data.value) {
@@ -61,51 +47,7 @@ function setReplyingTo(reply: ForumReply) {
   replyingTo.value = { id: reply.id, name: reply.author.name }
 }
 
-async function expandReplies(replyId: string) {
-  expandedReplies.value[replyId] = true
-  childPagesMap.value[replyId] = 1
 
-  try {
-    const res = await replyApi.getReplyChildPage({
-      parentReplyId: Number(replyId),
-      pageNum: 1,
-      pageSize: 3,
-    })
-    if (isApiSuccess(res) && res.data) {
-      const userMap = buildUserMap([], [])
-      extendUserMapFromReplies(userMap, res.data.records)
-      childRepliesMap.value[replyId] = res.data.records.map((r) => toForumReply(r, userMap))
-      childTotalMap.value[replyId] = res.data.total
-    }
-  } catch {
-    // silently ignore
-  }
-}
-
-async function loadMoreChildReplies(replyId: string) {
-  const nextPage = (childPagesMap.value[replyId] || 1) + 1
-  childPagesMap.value[replyId] = nextPage
-
-  try {
-    const res = await replyApi.getReplyChildPage({
-      parentReplyId: Number(replyId),
-      pageNum: nextPage,
-      pageSize: 3,
-    })
-    if (isApiSuccess(res) && res.data) {
-      const userMap = buildUserMap([], [])
-      extendUserMapFromReplies(userMap, res.data.records)
-      const newReplies = res.data.records.map((r) => toForumReply(r, userMap))
-      childRepliesMap.value[replyId] = [
-        ...(childRepliesMap.value[replyId] || []),
-        ...newReplies,
-      ]
-      childTotalMap.value[replyId] = res.data.total
-    }
-  } catch {
-    // silently ignore
-  }
-}
 </script>
 
 <template>
@@ -218,71 +160,22 @@ async function loadMoreChildReplies(replyId: string) {
               </div>
             </div>
 
-            <!-- Child reply section -->
+            <!-- Child reply section (TanStack Query useInfiniteQuery) -->
             <div class="ml-12 mt-3 md:ml-[216px]">
               <el-button
                 v-if="!expandedReplies[reply.id]"
                 text
                 size="small"
                 class="text-[0.84rem]"
-                @click="expandReplies(reply.id)"
+                @click="expandedReplies[reply.id] = true"
               >
                 展开子回复
               </el-button>
-
-              <div v-else class="border-l-2 border-[var(--forum-border)] pl-4">
-                <template v-if="childRepliesMap[reply.id]?.length">
-                  <div
-                    v-for="child in childRepliesMap[reply.id]"
-                    :key="child.id"
-                    class="mb-3 border-b border-[var(--forum-border)] pb-3 last:mb-0 last:border-b-0"
-                  >
-                    <div class="flex items-start gap-2">
-                      <el-avatar :size="28" :src="child.author.avatar" />
-                      <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-2">
-                          <strong class="text-[0.84rem] text-[#172235]">
-                            {{ child.author.name }}
-                          </strong>
-                          <span
-                            v-if="child.replyToUserNickname"
-                            class="text-[0.78rem] text-[#75839a]"
-                          >
-                            回复 @{{ child.replyToUserNickname }}
-                          </span>
-                        </div>
-                        <div class="mt-1 text-[0.9rem] text-[#1b2738]">
-                          <RichTextRenderer :content="child.content" />
-                        </div>
-                        <div class="mt-1 text-[0.78rem] text-[#75839a]">
-                          {{ child.createdAt }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    v-if="childTotalMap[reply.id] > (childRepliesMap[reply.id]?.length || 0)"
-                    class="mt-2"
-                  >
-                    <el-button
-                      text
-                      size="small"
-                      class="text-[0.84rem]"
-                      @click="loadMoreChildReplies(reply.id)"
-                    >
-                      加载更多
-                    </el-button>
-                  </div>
-                </template>
-
-                <div
-                  v-else
-                  class="py-2 text-[0.84rem] text-[#75839a]"
-                >
-                  暂无子回复
-                </div>
-              </div>
+              <ReplyChildSection
+                v-else
+                :parent-reply-id="reply.id"
+                :expanded="!!expandedReplies[reply.id]"
+              />
             </div>
           </article>
         </section>

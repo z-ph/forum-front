@@ -3,7 +3,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useForumHomeQuery } from './useForum'
 import type { ForumHomeData, ForumTopic } from '../types/forum'
 
-function parseForumDate(value: string) {
+function parseForumDate(value: string | null | undefined): number {
+  if (!value) {return 0}
   return new Date(value.replace(' ', 'T')).getTime()
 }
 

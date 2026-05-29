@@ -20,7 +20,7 @@ const emit = defineEmits<{
     v-else-if="isError"
     icon="warning"
     title="加载失败"
-    sub-title="当前是 mock 数据层，刷新通常即可恢复。"
+    sub-title="数据加载失败，请稍后重试。"
   />
   <TopicList
     v-else
