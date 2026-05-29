@@ -4,8 +4,8 @@ info:
   description: |
     论坛后端 REST API 接口文档
 
-    **后端版本**: commit `bc37810` (master)
-    日期: 2026-05-23
+     **后端版本**: commit `628963f` (master)
+     日期: 2026-05-29
 
     ## 通用说明
     - 所有响应统一包裹在 `Result<T>` 中: `{ code: 1, msg: "success", data: T }`
@@ -13,7 +13,7 @@ info:
     - 分页接口返回 `Page<T>`: `{ records: T[], total, size, current, pages }`
     - 需要认证的接口在 `Authorization` header 中传入 `Bearer <jwt_token>`
     - 日期格式: `yyyy-MM-dd HH:mm:ss` (LocalDateTime), `yyyy-MM-dd` (LocalDate)
-  version: "bc37810"
+  version: "628963f"
   contact:
     name: Backend Team
 
@@ -87,6 +87,12 @@ paths:
   /category/selectAll:
     $ref: "./openapi/category.yaml#/paths/~1category~1selectAll"
 
+  # ==================== Attachment ====================
+  /attachment/view/{id}:
+    $ref: "./openapi/attachment.yaml#/paths/~1attachment~1view~1{id}"
+  /attachment/download/{id}:
+    $ref: "./openapi/attachment.yaml#/paths/~1attachment~1download~1{id}"
+
 components:
   securitySchemes:
     $ref: "./openapi/common.yaml#/components/securitySchemes"
@@ -134,6 +140,9 @@ components:
     PageReplyVO:
       $ref: "./openapi/reply.yaml#/components/schemas/PageReplyVO"
 
+    AttachmentVO:
+      $ref: "./openapi/attachment.yaml#/components/schemas/AttachmentVO"
+
     CategoryCreateRequest:
       $ref: "./openapi/category.yaml#/components/schemas/CategoryCreateRequest"
     CategoryVO:
@@ -150,5 +159,7 @@ tags:
     description: 标签管理（CRUD、搜索）
   - name: Reply
     description: 回复管理（新增、删除、分页查询）
+  - name: Attachment
+    description: 附件管理（在线预览、下载）
   - name: Category
     description: 分类管理（CRUD、树形查询、搜索）

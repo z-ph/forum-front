@@ -2,12 +2,12 @@ paths:
   /reply:
     post:
       tags: [Reply]
-      summary: 新增回复
+      summary: 新增回复（支持附件）
       operationId: createReply
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/ReplyCreateRequest"
       responses:
@@ -27,7 +27,7 @@ paths:
   /reply/{id}:
     delete:
       tags: [Reply]
-      summary: 删除回复
+      summary: 删除回复（同步清理附件）
       operationId: deleteReply
       parameters:
         - name: id
@@ -103,7 +103,7 @@ paths:
   /reply/my:
     get:
       tags: [Reply]
-      summary: 获取我的回复列表
+      summary: 获取我的回复列表（封禁用户可访问）
       operationId: getMyReplies
       parameters:
         - name: pageNum
@@ -133,20 +133,30 @@ components:
   schemas:
     ReplyCreateRequest:
       type: object
-      required: [topicId, content]
       properties:
-        topicId:
+        reply.topicId:
           type: integer
           format: int64
           description: 话题ID
-        parentReplyId:
+        reply.parentReplyId:
           type: integer
           format: int64
-          description: "父回复ID，顶级回复传0或不传"
-        content:
+          description: "父回复ID，顶层回复传0或不传"
+        reply.content:
           type: string
           minLength: 1
           description: 回复内容
+        attachments[0].fileName:
+          type: string
+          description: 附件文件名（可选，为空时以后端原始文件名为准）
+        attachments[0].fileType:
+          type: string
+          enum: [IMAGE, FILE]
+          description: 附件文件类型
+        attachments[0].fileData:
+          type: string
+          format: binary
+          description: 附件文件数据
 
     ReplyTopPageQuery:
       type: object
@@ -210,6 +220,11 @@ components:
           format: date-time
         isDeleted:
           type: integer
+        attachments:
+          type: array
+          items:
+            $ref: "./attachment.yaml#/components/schemas/AttachmentVO"
+          description: 附件列表
 
     PageReplyVO:
       allOf:

@@ -2,12 +2,12 @@ paths:
   /topic:
     post:
       tags: [Topic]
-      summary: 新增话题
+      summary: 新增话题（支持附件）
       operationId: createTopic
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/TopicCreateRequest"
       responses:
@@ -27,7 +27,7 @@ paths:
   /topic/{id}:
     delete:
       tags: [Topic]
-      summary: 删除话题
+      summary: 删除话题（同步清理附件）
       operationId: deleteTopic
       parameters:
         - name: id
@@ -51,7 +51,7 @@ paths:
                         example: "删除成功"
     put:
       tags: [Topic]
-      summary: 修改话题
+      summary: 修改话题（支持附件增删）
       operationId: updateTopic
       parameters:
         - name: id
@@ -63,9 +63,9 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "#/components/schemas/TopicCreateRequest"
+              $ref: "#/components/schemas/TopicUpdateRequest"
       responses:
         "200":
           description: 修改成功
@@ -186,7 +186,7 @@ paths:
   /topic/my:
     get:
       tags: [Topic]
-      summary: 获取我的话题列表
+      summary: 获取我的话题列表（封禁用户可访问）
       operationId: getMyTopics
       parameters:
         - name: pageNum
@@ -216,26 +216,75 @@ components:
   schemas:
     TopicCreateRequest:
       type: object
-      required: [categoryId, title, content]
       properties:
-        categoryId:
+        topic.categoryId:
           type: integer
           format: int64
           description: 分类ID
-        title:
+        topic.title:
           type: string
           minLength: 1
           description: 标题
-        content:
+        topic.content:
           type: string
           minLength: 1
           description: 内容
-        tagIds:
+        topic.tagIds:
           type: array
           items:
             type: integer
             format: int64
           description: 标签ID列表
+        attachments[0].fileName:
+          type: string
+          description: 附件文件名（可选，为空时以后端原始文件名为准）
+        attachments[0].fileType:
+          type: string
+          enum: [IMAGE, FILE]
+          description: 附件文件类型
+        attachments[0].fileData:
+          type: string
+          format: binary
+          description: 附件文件数据
+
+    TopicUpdateRequest:
+      type: object
+      properties:
+        topic.categoryId:
+          type: integer
+          format: int64
+          description: 分类ID
+        topic.title:
+          type: string
+          minLength: 1
+          description: 标题
+        topic.content:
+          type: string
+          minLength: 1
+          description: 内容
+        topic.tagIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: 标签ID列表
+        attachments[0].fileName:
+          type: string
+          description: 新增附件文件名（可选）
+        attachments[0].fileType:
+          type: string
+          enum: [IMAGE, FILE]
+          description: 新增附件文件类型
+        attachments[0].fileData:
+          type: string
+          format: binary
+          description: 新增附件文件数据
+        deleteAttachmentIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: 需要删除的附件ID列表
 
     TopicPageQuery:
       type: object
@@ -299,6 +348,11 @@ components:
           type: array
           items:
             $ref: "./tag.yaml#/components/schemas/TagVO"
+        attachments:
+          type: array
+          items:
+            $ref: "./attachment.yaml#/components/schemas/AttachmentVO"
+          description: 附件列表
 
     PageTopicVO:
       allOf:
