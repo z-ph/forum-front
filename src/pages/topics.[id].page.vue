@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import ReplyChildSection from '../components/forum/ReplyChildSection.vue'
 import ReplyComposer from '../components/forum/ReplyComposer.vue'
 import RichTextRenderer from '../components/forum/RichTextRenderer.vue'
-import { useCreateReplyMutation, useTopicDetailQuery } from '../hooks/useForum'
+import { useCreateReplyMutation, useForumHomeQuery, useTopicDetailQuery } from '../hooks/useForum'
 import type { ForumReply } from '../types/forum'
 
 const route = useRoute('/topics.[id]')
 const router = useRouter()
 const topicId = computed(() => route.params.id)
 
-const { data, isLoading, isError } = useTopicDetailQuery(topicId.value)
+const { data, isLoading, isError } = useTopicDetailQuery(topicId)
+const { data: homeData } = useForumHomeQuery()
+const me = computed(() => homeData.value?.me ?? null)
 const replyMutation = useCreateReplyMutation()
 const isReplyPending = computed(() => replyMutation.isPending.value)
 
@@ -75,14 +76,9 @@ function setReplyingTo(reply: ForumReply) {
 
       <template v-else>
         <section class="border-b border-[var(--forum-border)] px-5 py-[18px] pb-6 md:px-8">
-          <div class="flex flex-wrap gap-2">
-            <RouterLink
-              :to="{ name: '/(forum)/categories' }"
-              class="inline-flex border border-[var(--forum-border)] bg-[var(--forum-surface)] px-2 py-[3px] text-[0.78rem] font-bold text-[var(--forum-primary)] no-underline transition-colors hover:bg-[var(--forum-surface-muted)]"
-            >
-              {{ data.categoryName }}
-            </RouterLink>
-          </div>
+          <el-tag @click="router.push({ name: '/(forum)/categories' })" class="cursor-pointer">
+            {{ data.categoryName }}
+          </el-tag>
 
           <h1 class="my-[14px] mb-4 text-[clamp(1.8rem,2.2vw,2.45rem)] leading-[1.25] text-[#162235]">
             {{ data.title }}
@@ -164,16 +160,16 @@ function setReplyingTo(reply: ForumReply) {
             <!-- Child reply section (TanStack Query useInfiniteQuery) -->
             <div class="ml-12 mt-3 md:ml-[216px]">
               <el-button
-                v-if="!expandedReplies[reply.id]"
+                v-if="reply.childCount && !expandedReplies[reply.id]"
                 text
                 size="small"
                 class="text-[0.84rem]"
                 @click="expandedReplies[reply.id] = true"
               >
-                展开子回复
+                展开 {{ reply.childCount }} 条子回复
               </el-button>
               <ReplyChildSection
-                v-else
+                v-else-if="expandedReplies[reply.id]"
                 :parent-reply-id="reply.id"
                 :expanded="!!expandedReplies[reply.id]"
               />
@@ -182,6 +178,7 @@ function setReplyingTo(reply: ForumReply) {
         </section>
 
         <ReplyComposer
+          :me="me"
           :loading="isReplyPending"
           :replying-to="replyingTo"
           @submit="handleReply"

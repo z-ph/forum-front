@@ -4,7 +4,7 @@ import type { ForumUser, ForumCategory, ForumTopic, ForumTopicDetail, ForumReply
 import type { UserVO } from './userApi'
 import type { TopicVO } from './topicApi'
 import type { ReplyVO } from './replyApi'
-import type { CategoryVO } from './categoryApi'
+import type { CategoryVO, CategoryTreeVO } from './categoryApi'
 
 const CATEGORY_PALETTE = ['#2764ff', '#ff7b30', '#0f9d6c', '#7b61ff', '#cf4e8a', '#b88822']
 
@@ -56,13 +56,14 @@ export function toForumUserFromCreator(creatorId: number, creatorNickname: strin
 }
 
 /** Convert an API CategoryVO to the UI ForumCategory shape. */
-export function toForumCategory(vo: CategoryVO, topicCount = 0): ForumCategory {
+export function toForumCategory(vo: CategoryVO | CategoryTreeVO, topicCount = 0): ForumCategory {
   const validated = tryValidate(CategoryVOSchema, vo, 'CategoryVO')
   if (!validated) {
     const fallbackId = vo.id ?? 0
     const colorIndex = (fallbackId - 1) % CATEGORY_PALETTE.length
     return {
       id: String(fallbackId),
+      parentId: String(vo.parentId ?? 0) === '0' ? null : String(vo.parentId),
       name: vo.name ?? '',
       slug: slugify(vo.name ?? ''),
       description: vo.description || '',
@@ -73,12 +74,24 @@ export function toForumCategory(vo: CategoryVO, topicCount = 0): ForumCategory {
   const colorIndex = (validated.id - 1) % CATEGORY_PALETTE.length
   return {
     id: String(validated.id),
+    parentId: String(validated.parentId) === '0' ? null : String(validated.parentId),
     name: validated.name,
     slug: slugify(validated.name),
     description: validated.description || '',
     accent: CATEGORY_PALETTE[colorIndex],
     topicCount,
   }
+}
+
+/** Convert a CategoryTreeVO array (from backend) to a ForumCategory tree. */
+export function toForumCategoryTree(tree: CategoryTreeVO[]): ForumCategory[] {
+  return tree.map(node => {
+    const category = toForumCategory(node)
+    if (node.children && node.children.length > 0) {
+      category.children = node.children.map(child => toForumCategory(child))
+    }
+    return category
+  })
 }
 
 /**

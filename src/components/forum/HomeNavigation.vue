@@ -23,8 +23,8 @@ const emit = defineEmits<{
 const router = useRouter()
 
 const feedItems = [
-  { key: 'categories' as ForumTopicFeed, label: '类别', title: '按类别查看话题', name: '/(forum)/categories' as const },
-  { key: 'latest' as ForumTopicFeed, label: '最新', title: '按最后活动查看最新话题', name: '/(forum)/latest' as const },
+  { key: 'categories' as ForumTopicFeed, label: '类别', name: '/(forum)/categories' as const },
+  { key: 'latest' as ForumTopicFeed, label: '最新', name: '/(forum)/latest' as const },
 ]
 
 function updateCategory(value: string) {
@@ -44,28 +44,34 @@ const sharedQuery = computed(() => ({
 <template>
   <section class="border-b [background:color-mix(in_srgb,var(--forum-surface-muted)_74%,white)] [border-color:var(--forum-border)]">
     <div class="grid gap-3 px-[18px] py-3 md:px-[22px] md:py-[14px]">
-      <div class="flex items-end justify-between gap-3 max-[860px]:items-stretch max-[860px]:flex-col">
-        <div class="flex flex-wrap items-center gap-2.5 max-[640px]:grid max-[640px]:w-full max-[640px]:grid-cols-1">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
           <el-select
             :model-value="props.activeCategoryId"
             aria-label="筛选条件：类别"
-            class="home-navigation-select min-w-[148px] max-[640px]:w-full"
+            class="home-navigation-select min-w-[148px]"
             placeholder="类别"
             @update:model-value="updateCategory"
           >
             <el-option label="全部类别" value="all" />
-            <el-option
-              v-for="category in props.categories"
-              :key="category.id"
-              :label="category.name"
-              :value="category.id"
-            />
+            <template v-for="category in props.categories" :key="category.id">
+              <el-option-group v-if="category.children?.length" :label="category.name">
+                <el-option :label="category.name" :value="category.id" />
+                <el-option
+                  v-for="child in category.children"
+                  :key="child.id"
+                  :label="child.name"
+                  :value="child.id"
+                />
+              </el-option-group>
+              <el-option v-else :label="category.name" :value="category.id" />
+            </template>
           </el-select>
 
           <el-select
             :model-value="props.activeTag"
             aria-label="筛选条件：标签"
-            class="home-navigation-select min-w-[148px] max-[640px]:w-full"
+            class="home-navigation-select min-w-[148px]"
             placeholder="标签"
             @update:model-value="updateTag"
           >
@@ -87,35 +93,24 @@ const sharedQuery = computed(() => ({
         </el-button>
       </div>
 
-      <div class="flex items-start justify-between gap-4 max-[980px]:flex-col">
-        <nav class="overflow-x-auto" aria-label="首页话题流">
-          <ul class="flex min-w-max list-none items-center gap-1 p-0">
-            <li v-for="item in feedItems" :key="item.key">
-              <router-link
-                :to="{ name: item.name, query: sharedQuery }"
-                class="inline-flex min-h-11 items-center rounded-full border px-3.5 py-[7px] text-[0.84rem] font-medium transition-colors duration-200"
-                :class="item.key === props.activeFeed
-                  ? 'border-[var(--forum-primary)] bg-[color-mix(in_srgb,var(--forum-primary)_10%,white)] text-[#14325f]'
-                  : 'border-[var(--forum-border)] bg-[var(--forum-surface)] text-[#5f7088] hover:bg-[color-mix(in_srgb,var(--forum-surface-muted)_84%,white)]'"
-                :aria-current="item.key === props.activeFeed ? 'page' : undefined"
-                :title="item.title"
-              >
-                {{ item.label }}
-              </router-link>
-            </li>
-          </ul>
-        </nav>
-
-        <div class="flex min-w-0 items-start justify-between gap-4 rounded-[2px] border px-3.5 py-2.5 [background:var(--forum-surface)] [border-color:var(--forum-border)] max-[980px]:w-full">
-          <div class="min-w-0">
-            <strong class="block text-[0.96rem] font-semibold text-[#172338]">{{ props.summaryTitle }}</strong>
-            <span class="mt-1 block text-[0.82rem] leading-6 text-[#5c6d86]">{{ props.summaryHint }}</span>
-          </div>
-          <span class="mt-0.5 whitespace-nowrap text-[0.82rem] font-medium leading-6 text-[#5c6d86]">
-            共 {{ props.resultCount }} 条
-          </span>
-        </div>
-      </div>
+      <nav aria-label="首页话题流">
+        <el-radio-group
+          :model-value="props.activeFeed"
+          @change="(val: string | number | boolean | undefined) => {
+            if (!val) return
+            const item = feedItems.find(i => i.key === val)
+            if (item) router.push({ name: item.name, query: sharedQuery })
+          }"
+        >
+          <el-radio-button
+            v-for="item in feedItems"
+            :key="item.key"
+            :value="item.key"
+          >
+            {{ item.label }}
+          </el-radio-button>
+        </el-radio-group>
+      </nav>
     </div>
   </section>
 </template>

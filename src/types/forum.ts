@@ -10,11 +10,13 @@ export interface ForumUser {
 
 export interface ForumCategory {
   id: string
+  parentId: string | null
   name: string
   slug: string
   description: string
   accent: string
   topicCount: number
+  children?: ForumCategory[]
 }
 
 export interface ForumReply {

@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/vue-query'
-import { ref, type Ref } from 'vue'
+import { computed, ref, toValue, type MaybeRef, type Ref } from 'vue'
 import type {
   AuthPayload,
   CreateReplyPayload,
@@ -15,7 +15,7 @@ import type {
 import {
   buildUserMap,
   extendUserMapFromReplies,
-  toForumCategory,
+  toForumCategoryTree,
   toForumReply,
   toForumTopic,
   toForumTopicDetail,
@@ -24,7 +24,6 @@ import {
 } from '../services/forumAdapter'
 import type { TagVO } from '../types/api'
 import * as categoryApi from '../services/categoryApi'
-import { flattenCategoryTree } from '../services/categoryApi'
 import * as replyApi from '../services/replyApi'
 import * as tagApi from '../services/tagApi'
 import * as topicApi from '../services/topicApi'
@@ -62,8 +61,9 @@ async function getForumHome(): Promise<ForumHomeData> {
     tagMap.value = map
   }
 
-  const rawCategories = isApiSuccess(categoryRes) ? flattenCategoryTree(categoryRes.data ?? []) : []
-  const categories: ForumCategory[] = rawCategories.map((c) => toForumCategory(c))
+  const categories: ForumCategory[] = isApiSuccess(categoryRes)
+    ? toForumCategoryTree(categoryRes.data ?? [])
+    : []
 
   const availableTags: string[] = isApiSuccess(tagRes) ? (tagRes.data ?? []).map((t) => t.name) : []
 
@@ -209,11 +209,11 @@ export function useForumHomeQuery() {
   })
 }
 
-export function useTopicDetailQuery(topicId: string) {
+export function useTopicDetailQuery(topicId: MaybeRef<string>) {
   return useQuery({
-    queryKey: forumKeys.detail(topicId),
-    queryFn: () => getTopicDetail(topicId),
-    enabled: !!topicId,
+    queryKey: computed(() => forumKeys.detail(toValue(topicId))),
+    queryFn: () => getTopicDetail(toValue(topicId)),
+    enabled: computed(() => !!toValue(topicId)),
   })
 }
 

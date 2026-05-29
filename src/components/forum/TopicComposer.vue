@@ -119,12 +119,18 @@ function handleClose() {
           :default-first-option="isAdmin"
           placeholder="请选择分类"
         >
-          <el-option
-            v-for="category in categories"
-            :key="category.id"
-            :label="category.name"
-            :value="category.id"
-          />
+          <template v-for="category in categories" :key="category.id">
+            <el-option-group v-if="category.children?.length" :label="category.name">
+              <el-option :label="category.name" :value="category.id" />
+              <el-option
+                v-for="child in category.children"
+                :key="child.id"
+                :label="child.name"
+                :value="child.id"
+              />
+            </el-option-group>
+            <el-option v-else :label="category.name" :value="category.id" />
+          </template>
         </el-select>
         <div class="mt-1.5 text-[0.8rem] leading-6 text-forum-text-soft">
           {{ isAdmin ? '管理员可输入并创建新分类，普通用户只能选择现有分类。' : '分类由管理员维护，普通用户只能选择现有分类。' }}

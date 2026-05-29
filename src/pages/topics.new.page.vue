@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import RichTextEditor from '../components/forum/RichTextEditor.vue'
 import { useCreateTopicMutation, useForumHomeQuery } from '../hooks/useForum'
@@ -72,7 +72,13 @@ async function submitTopic() {
 
         <el-form-item label="分类" prop="categoryId">
           <el-select v-model="form.categoryId" placeholder="请选择分类">
-            <el-option v-for="category in data?.categories ?? []" :key="category.id" :label="category.name" :value="category.id" />
+            <template v-for="category in data?.categories ?? []" :key="category.id">
+              <el-option-group v-if="category.children?.length" :label="category.name">
+                <el-option :label="category.name" :value="category.id" />
+                <el-option v-for="child in category.children" :key="child.id" :label="child.name" :value="child.id" />
+              </el-option-group>
+              <el-option v-else :label="category.name" :value="category.id" />
+            </template>
           </el-select>
         </el-form-item>
 

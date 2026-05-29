@@ -66,7 +66,13 @@ export function useForumFeed(
 
   const activeCategory = computed(() => {
     if (activeCategoryId.value === 'all') {return null}
-    return (data.value?.categories ?? []).find(item => item.id === activeCategoryId.value) ?? null
+    const all = data.value?.categories ?? []
+    for (const cat of all) {
+      if (cat.id === activeCategoryId.value) {return cat}
+      const child = cat.children?.find(c => c.id === activeCategoryId.value)
+      if (child) {return child}
+    }
+    return null
   })
 
   const activeTagLabel = computed(() => activeTag.value === 'all' ? '' : `#${activeTag.value}`)
@@ -74,8 +80,13 @@ export function useForumFeed(
   const topics = computed(() => {
     let next = data.value?.topics ?? []
 
-    if (activeCategoryId.value !== 'all')
-      {next = next.filter(topic => topic.categoryId === activeCategoryId.value)}
+    if (activeCategoryId.value !== 'all') {
+      const selectedId = activeCategoryId.value
+      const selectedCategory = (data.value?.categories ?? []).find(c => c.id === selectedId)
+      const childIds = selectedCategory?.children?.map(c => c.id) ?? []
+      const matchIds = [selectedId, ...childIds]
+      next = next.filter(topic => matchIds.includes(topic.categoryId ?? ''))
+    }
 
     if (activeTag.value !== 'all')
       {next = next.filter(topic => topic.tags.includes(activeTag.value))}
