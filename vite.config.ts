@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const apiProxyPrefix = '/asdfasdf'
+  const apiProxyPrefix = '/api'
   const env = loadEnv(mode, process.cwd())
 
   return {
