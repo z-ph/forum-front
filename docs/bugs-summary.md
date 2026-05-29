@@ -17,3 +17,13 @@
 | R4 | ✅ | **低** | ForumHome | `totalTopics` 语义不准，用 `topics.length` 而非服务端 `total` | 4cdaf1e: 在 `ForumHomeData` 中增加显式 `totalTopics` 字段 |
 | R5 | ✅ | **低** | auth.page.vue | 第 95 行附近有开发者注释暴露在 UI | a6acfb3: 移除流程覆盖/数据来源区块，开发注释加 `v-if="isDev"` |
 | R6 | ✅ | **低** | 路由 | 缺少 404 catch-all 页面 | 已添加 `src/pages/[...path].page.vue`（commit 410b6a3） |
+
+## 代码审查问题（2026-05-29 #2）
+
+| # | 状态 | 严重度 | 模块 | 问题 | 修复 |
+|---|------|--------|------|------|------|
+| R7 | ⬜ | **低** | schemas.ts | `apiResponseSchema` / `pageSchema` 泛型工具未使用，死代码 | 可选：若近期无接入计划可删除 |
+| R8 | ✅ | **低** | schemas.ts | `CategoryTreeVOSchema` 手动字段级类型注解冗余 | 8153dc6: 替换为 `z.ZodType<unknown>` |
+| R9 | ✅ | **低** | main.ts | `sendBeacon` 上报 URL 硬编码 `/api/monitor/validation-error`，不可配置且无文档 | b1182b0: 改为 `VITE_MONITOR_VALIDATION_URL` 环境变量，记录到 `.env.example` |
+| R10 | ⬜ | **低** | schemas.ts | `failureCounts` Map 只增不减，长时间 SPA 会累积 | 低优先级：schema 数量有天然上限，当前 schema label 均为固定字符串 |
+| R11 | ✅ | **低** | 路由 | 缺少 404 catch-all 页面（延续前两次） | 已确认存在 `src/pages/[...path].page.vue` |
