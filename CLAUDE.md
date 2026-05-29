@@ -28,20 +28,22 @@ Pre-commit hook runs `pnpm typecheck` automatically.
 
 ### Key Rules
 
-1. **Nested routes**: Place `parent.page.vue` alongside a `parent/` folder to create layout wrapper. Children render in parent's `<RouterView>`.
+1. **Route config**: Use `definePage()` macro in `<script setup>` for route-level config (redirect, meta, etc.). Do NOT use `<route>` custom blocks — `definePage` is the canonical approach.
 
-2. **URL nesting without layout**: Use dot notation (`users.profile.page.vue` → `/users/profile`) when URL should nest but UI shouldn't.
+2. **Nested routes**: Place `parent.page.vue` alongside a `parent/` folder to create layout wrapper. Children render in parent's `<RouterView>`.
 
-3. **Type-safe navigation**: Import `unplugin-vue-router/client` in entry file to enable typed routes. Use route name strings for params:
+3. **URL nesting without layout**: Use dot notation (`users.profile.page.vue` → `/users/profile`) when URL should nest but UI shouldn't.
+
+5. **Type-safe navigation**: Import `unplugin-vue-router/client` in entry file to enable typed routes. Use route name strings for params:
    ```ts
    router.push({ name: '/topics/[id]', params: { id: '123' } })
    const route = useRoute('/topics/[id]')
    route.params.id // typed as string
    ```
 
-4. **Typed RouterLink**: `<RouterLink :to="{ name: '/users/[id]', params: { id: userId } }">` provides autocomplete.
+6. **Typed RouterLink**: `<RouterLink :to="{ name: '/users/[id]', params: { id: userId } }">` provides autocomplete.
 
-5. **Generated types**: `src/typed-router.d.ts` is auto-generated - never edit manually. It updates when page files change.
+7. **Generated types**: `src/typed-router.d.ts` is auto-generated - never edit manually. It updates when page files change.
 
 ### Current Structure
 
