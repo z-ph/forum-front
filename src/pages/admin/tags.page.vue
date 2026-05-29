@@ -162,6 +162,7 @@ function handleDelete(row: TagVO) {
       v-model="dialogVisible"
       :title="dialogTitle"
       width="480px"
+      class="max-w-[calc(100vw-1.5rem)]"
       :close-on-click-modal="false"
       :aria-label="dialogTitle"
     >

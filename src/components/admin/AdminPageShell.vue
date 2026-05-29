@@ -13,11 +13,11 @@ defineProps<{
       class="mx-auto flex max-w-6xl items-start justify-between gap-4 px-6 py-5"
     >
       <div class="min-w-0">
-        <h1
+        <h2
           class="m-0 text-lg font-semibold leading-6 [color:var(--forum-text)]"
         >
           {{ title }}
-        </h1>
+        </h2>
         <p
           v-if="description"
           class="mt-1 text-sm leading-5 [color:var(--forum-text-soft)]"

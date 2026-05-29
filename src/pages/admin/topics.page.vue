@@ -146,7 +146,16 @@ const pagination = computed(() => ({
           label="标题"
           min-width="240"
           show-overflow-tooltip
-        />
+        >
+          <template #default="{ row }: { row: { id: number; title: string } }">
+            <RouterLink
+              :to="{ name: '/topics.[id]', params: { id: row.id } }"
+              class="text-[var(--forum-primary)] no-underline hover:underline"
+            >
+              {{ row.title }}
+            </RouterLink>
+          </template>
+        </el-table-column>
         <el-table-column prop="categoryName" label="分类" width="120" />
         <el-table-column prop="creatorNickname" label="创建者" width="120" />
         <el-table-column prop="replyCount" label="回复" width="70" align="center" />

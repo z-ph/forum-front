@@ -1,21 +1,30 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useRoute } from 'vue-router'
+import {
+  User, ChatDotRound, Folder, PriceTag, Back,
+} from '@element-plus/icons-vue'
 import { useAdminAuth } from '../hooks/useAdmin'
 import AdminAccessDenied from '../components/admin/AdminAccessDenied.vue'
-import AdminPageShell from '../components/admin/AdminPageShell.vue'
-import { downloadValidationData, getValidationStats } from '../core/schemas'
+import { downloadValidationData, getValidationStats, getValidationToastEnabled, setValidationToastEnabled } from '../core/schemas'
 
+const route = useRoute()
 const { isLoading, isError, isAdmin, refetch } = useAdminAuth()
 
 const hasFailures = ref(false)
+const failureCount = ref(0)
+const toastEnabled = ref(getValidationToastEnabled())
 let checkTimer: ReturnType<typeof setInterval> | undefined
 onMounted(() => {
   const stats = getValidationStats()
-  hasFailures.value = Object.keys(stats).length > 0
+  failureCount.value = Object.values(stats).reduce((a, b) => a + b, 0)
+  hasFailures.value = failureCount.value > 0
   checkTimer = setInterval(() => {
     const s = getValidationStats()
-    hasFailures.value = Object.keys(s).length > 0
+    failureCount.value = Object.values(s).reduce((a, b) => a + b, 0)
+    hasFailures.value = failureCount.value > 0
+    toastEnabled.value = getValidationToastEnabled()
   }, 10_000)
 })
 onUnmounted(() => clearInterval(checkTimer))
@@ -24,19 +33,24 @@ function handleDownload() {
   downloadValidationData()
   ElMessage.success('校验数据已下载')
 }
-</script>
 
-<script lang="ts">
-const navItems = [
-  { path: '/admin/users', label: '用户' },
-  { path: '/admin/topics', label: '话题' },
-  { path: '/admin/categories', label: '分类' },
-  { path: '/admin/tags', label: '标签' },
+function toggleToast() {
+  toastEnabled.value = !toastEnabled.value
+  setValidationToastEnabled(toastEnabled.value)
+}
+
+const menuItems = [
+  { path: '/admin/users', label: '用户管理', icon: User },
+  { path: '/admin/topics', label: '话题管理', icon: ChatDotRound },
+  { path: '/admin/categories', label: '分类管理', icon: Folder },
+  { path: '/admin/tags', label: '标签管理', icon: PriceTag },
 ]
+
+const activeMenu = computed(() => route.path)
 </script>
 
 <template>
-  <div class="min-h-screen bg-transparent pb-6">
+  <div class="min-h-screen bg-transparent">
     <el-skeleton v-if="isLoading" :rows="6" animated />
 
     <el-result
@@ -53,37 +67,75 @@ const navItems = [
     <AdminAccessDenied v-else-if="!isAdmin" />
 
     <template v-else>
-      <div
-        class="mx-auto w-full border border-t-0 [background:var(--forum-surface)] [border-color:var(--forum-border)]"
-      >
-        <AdminPageShell
-          title="管理后台"
-          description="论坛内容管理与维护"
+      <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside
+          class="sticky top-0 flex h-screen w-[220px] shrink-0 flex-col border-r [background:var(--forum-surface)] [border-color:var(--forum-border)]"
         >
-          <template #actions>
-            <nav class="flex items-center gap-1" aria-label="管理后台导航">
-              <RouterLink
-                v-for="item in navItems"
-                :key="item.path"
-                :to="{ path: item.path }"
-                class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium [color:var(--forum-text-soft)] transition-colors hover:[background:var(--forum-surface-muted)] hover:[color:var(--forum-text)]"
-                active-class="![background:var(--forum-surface-muted)] ![color:var(--forum-text)]"
-              >
-                {{ item.label }}
-              </RouterLink>
-            </nav>
-            <el-button
-              v-if="hasFailures"
-              size="small"
-              class="ml-2"
-              @click="handleDownload"
+          <!-- Logo / Title -->
+          <div class="border-b px-5 py-5 [border-color:var(--forum-border)]">
+            <RouterLink
+              :to="{ name: '/(forum)' }"
+              class="block text-base font-bold no-underline [color:var(--forum-text)] hover:opacity-80"
             >
-              导出校验数据
-            </el-button>
-          </template>
+              机器人DIY论坛
+            </RouterLink>
+            <p class="m-0 mt-1 text-[0.78rem] [color:var(--forum-text-soft)]">
+              管理后台
+            </p>
+          </div>
 
+          <!-- Navigation Menu -->
+          <el-menu
+            :default-active="activeMenu"
+            router
+            class="flex-1 !border-r-0"
+          >
+            <el-menu-item
+              v-for="item in menuItems"
+              :key="item.path"
+              :index="item.path"
+            >
+              <el-icon><component :is="item.icon" /></el-icon>
+              <span>{{ item.label }}</span>
+            </el-menu-item>
+          </el-menu>
+
+          <!-- Sidebar Footer -->
+          <div class="border-t px-4 py-3 [border-color:var(--forum-border)]">
+            <div class="mb-2 flex flex-col gap-1.5">
+              <el-button
+                size="small"
+                :type="toastEnabled ? 'warning' : 'info'"
+                class="w-full"
+                @click="toggleToast"
+              >
+                {{ toastEnabled ? '告警弹窗：开' : '告警弹窗：关' }}
+              </el-button>
+              <el-button
+                size="small"
+                :disabled="!hasFailures"
+                :type="hasFailures ? 'danger' : 'info'"
+                class="w-full"
+                @click="handleDownload"
+              >
+                导出校验{{ failureCount ? ` (${failureCount})` : '' }}
+              </el-button>
+            </div>
+            <RouterLink
+              :to="{ path: '/' }"
+              class="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.84rem] no-underline transition-colors [color:var(--forum-text-soft)] hover:[background:var(--forum-surface-muted)] hover:[color:var(--forum-text)]"
+            >
+              <el-icon :size="14"><Back /></el-icon>
+              返回论坛
+            </RouterLink>
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="min-w-0 flex-1 p-6">
           <RouterView />
-        </AdminPageShell>
+        </main>
       </div>
     </template>
   </div>
