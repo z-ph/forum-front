@@ -1,5 +1,5 @@
 import { computed, ref, type ComputedRef } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import {
   useCreateTopicMutation,
@@ -47,6 +47,15 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
   }
 
   async function handleLogout() {
+    try {
+      await ElMessageBox.confirm('确定退出当前账号吗？', '提示', {
+        confirmButtonText: '退出',
+        cancelButtonText: '取消',
+        type: 'warning',
+      })
+    } catch {
+      return
+    }
     await logoutMutation.mutateAsync()
     ElMessage.success('已退出当前账号')
   }
@@ -55,9 +64,6 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
     void router.push({ name: '/auth' })
   }
 
-  function handleSearch() {
-    ElMessage.info('搜索入口已预留，后续可接入搜索页或筛选框')
-  }
 
   function handleCompose() {
     if (!me.value) {
@@ -84,7 +90,6 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
     handleCreateTopic,
     handleLogout,
     handleAuth,
-    handleSearch,
     handleCompose,
   }
 }

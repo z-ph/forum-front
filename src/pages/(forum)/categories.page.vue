@@ -4,7 +4,7 @@ import { useForumFeed } from '../../hooks/useForumFeed'
 import ForumFeedPage from '../../components/forum/ForumFeedPage.vue'
 
 const feed = computed(() => 'categories' as const)
-const { topics, isLoading, isError, emptyDescription, openTopic } = useForumFeed(feed)
+const { topics, isLoading, isError, emptyDescription, openTopic, refetch } = useForumFeed(feed)
 </script>
 
 <template>
@@ -14,5 +14,6 @@ const { topics, isLoading, isError, emptyDescription, openTopic } = useForumFeed
     :is-loading="isLoading"
     :is-error="isError"
     @open-topic="openTopic"
+    @retry="refetch"
   />
 </template>

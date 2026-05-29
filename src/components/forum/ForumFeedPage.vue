@@ -11,6 +11,7 @@ defineProps<{
 
 const emit = defineEmits<{
   openTopic: [topicId: string]
+  retry: []
 }>()
 </script>
 
@@ -21,7 +22,11 @@ const emit = defineEmits<{
     icon="warning"
     title="加载失败"
     sub-title="数据加载失败，请稍后重试。"
-  />
+  >
+    <template #extra>
+      <el-button type="primary" @click="emit('retry')">重试</el-button>
+    </template>
+  </el-result>
   <TopicList
     v-else
     :topics="topics"

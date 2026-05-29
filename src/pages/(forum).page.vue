@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import ForumHeader from '../components/forum/ForumHeader.vue'
 import CategorySidebar from '../components/forum/CategorySidebar.vue'
 import HomeNavigation from '../components/forum/HomeNavigation.vue'
@@ -9,6 +9,11 @@ import { useForumHomeState } from '../hooks/useForumHomeState'
 import { useForumFeed } from '../hooks/useForumFeed'
 
 const route = useRoute()
+const router = useRouter()
+
+function handleAdmin() {
+  void router.push({ path: '/admin' })
+}
 const feed = computed<'categories' | 'latest'>(() => (
   route.name === '/(forum)/categories' ? 'categories' : 'latest'
 ))
@@ -18,7 +23,7 @@ const {
   me, categories, availableTags, totalTopics, isAdmin,
   isCreatingTopic, composeOpen, showCategorySidebar,
   activeFeed,
-  handleCreateTopic, handleLogout, handleAuth, handleSearch, handleCompose,
+  handleCreateTopic, handleLogout, handleAuth, handleCompose,
 } = useForumHomeState(feed)
 
 const {
@@ -33,10 +38,11 @@ const {
     <div class="mx-auto w-full border border-t-0 [background:var(--forum-surface)] [border-color:var(--forum-border)]">
       <ForumHeader
         :me="me"
+        :is-admin="isAdmin"
         @auth="handleAuth"
-        @search="handleSearch"
         @compose="handleCompose"
         @logout="handleLogout"
+        @admin="handleAdmin"
       />
 
       <main class="flex flex-col">

@@ -46,6 +46,10 @@ export function useForumFeed(
   const externalData = homeData
   const internalQuery = externalData ? null : useForumHomeQuery()
 
+  function refetch() {
+    return internalQuery?.refetch()
+  }
+
   const data = computed(() => externalData?.value ?? internalQuery?.data.value)
   const isLoading = computed(() => externalData ? false : (internalQuery?.isLoading.value ?? false))
   const isError = computed(() => externalData ? false : (internalQuery?.isError.value ?? false))
@@ -127,7 +131,7 @@ export function useForumFeed(
   }
 
   return {
-    topics, isLoading, isError, emptyDescription,
+    topics, isLoading, isError, emptyDescription, refetch,
     summaryTitle, summaryHint,
     activeCategoryId, activeTag, activeCategory,
     updateCategory, updateTag, openTopic,
