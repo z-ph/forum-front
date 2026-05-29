@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useLoginMutation, useRegisterMutation } from '../hooks/useForum'
 
@@ -10,6 +10,7 @@ const loginMutation = useLoginMutation()
 const registerMutation = useRegisterMutation()
 const isDev = import.meta.env.DEV
 const isAuthPending = computed(() => loginMutation.isPending.value || registerMutation.isPending.value)
+const formRef = ref<FormInstance>()
 
 const form = reactive({
   nickname: '',
@@ -17,6 +18,39 @@ const form = reactive({
   username: '',
   password: '',
 })
+
+const loginRules: FormRules = {
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' },
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码至少 6 个字符', trigger: 'blur' },
+  ],
+}
+
+const registerRules: FormRules = {
+  nickname: [
+    { required: true, message: '请输入昵称', trigger: 'blur' },
+    { min: 2, max: 20, message: '昵称 2-20 个字符', trigger: 'blur' },
+  ],
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' },
+  ],
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 2, max: 20, message: '用户名 2-20 个字符', trigger: 'blur' },
+    { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能包含字母、数字和下划线', trigger: 'blur' },
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码至少 6 个字符', trigger: 'blur' },
+  ],
+}
+
+const currentRules = computed(() => mode.value === 'login' ? loginRules : registerRules)
 
 const title = computed(() => (mode.value === 'login' ? '登录论坛' : '注册账号'))
 const subtitle = computed(() =>
@@ -26,10 +60,8 @@ const subtitle = computed(() =>
 )
 
 async function handleSubmit() {
-  if (!form.email || !form.password || (mode.value === 'register' && (!form.username || !form.nickname))) {
-    ElMessage.warning('请先补全表单')
-    return
-  }
+  const valid = await formRef.value?.validate().catch(() => false)
+  if (!valid) { return }
 
   try {
     if (mode.value === 'login') {
@@ -74,7 +106,7 @@ async function handleSubmit() {
         class="border-b border-[var(--forum-border)] bg-[var(--forum-surface-muted)] px-5 py-6 md:border-r md:border-b-0 md:border-[var(--forum-border)] md:px-8 md:py-7"
       >
         <h1 class="m-0 mb-3.5 text-[clamp(1.9rem,2.8vw,2.8rem)] leading-[1.16] text-[#162134]">
-          登录后继续浏览、发帖和回复。
+          {{ title }}
         </h1>
         <p v-if="isDev" class="m-0 leading-[1.8] text-[#60718b]">
           账号页保持和论坛首页一致的扁平结构，不额外做展示型包装，重点仍然是尽快进入核心讨论流程。
@@ -102,24 +134,23 @@ async function handleSubmit() {
         </div>
 
         <div class="my-5 mb-3">
-          <h2 class="m-0 mb-2 text-[1.7rem] text-[#1a2435]">{{ title }}</h2>
-          <p class="m-0 leading-[1.7] text-[#70809a]">{{ subtitle }}</p>
+          <h2 class="m-0 mb-2 text-[1.4rem] text-[#1a2435]">{{ subtitle }}</h2>
         </div>
 
-        <el-form label-position="top" @submit.prevent="handleSubmit">
-          <el-form-item v-if="mode === 'register'" label="昵称">
+        <el-form ref="formRef" :model="form" :rules="currentRules" label-position="top" @submit.prevent="handleSubmit">
+          <el-form-item v-if="mode === 'register'" label="昵称" prop="nickname">
             <el-input v-model="form.nickname" placeholder="例如：周可" />
           </el-form-item>
 
-          <el-form-item label="邮箱">
+          <el-form-item label="邮箱" prop="email">
             <el-input v-model="form.email" type="email" placeholder="例如：zhouke@example.com" />
           </el-form-item>
 
-          <el-form-item v-if="mode === 'register'" label="用户名">
+          <el-form-item v-if="mode === 'register'" label="用户名" prop="username">
             <el-input v-model="form.username" placeholder="例如：zhouke" />
           </el-form-item>
 
-          <el-form-item label="密码">
+          <el-form-item label="密码" prop="password">
             <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
           </el-form-item>
 
