@@ -37,7 +37,7 @@ export interface ForumTopic {
   categoryName?: string
   author: ForumUser
   createdAt: string
-  updatedAt: string
+  updatedAt: string | null
   views: number
   repliesCount: number
   tags: string[]
@@ -79,4 +79,5 @@ export interface ForumHomeData {
   categories: ForumCategory[]
   availableTags: string[]
   topics: ForumTopic[]
+  totalTopics: number
 }

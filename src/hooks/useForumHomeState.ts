@@ -23,7 +23,7 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
   const me = computed(() => data.value?.me ?? null)
   const categories = computed(() => data.value?.categories ?? [])
   const availableTags = computed(() => data.value?.availableTags ?? [])
-  const totalTopics = computed(() => data.value?.topics.length ?? 0)
+  const totalTopics = computed(() => data.value?.totalTopics ?? 0)
   const isAdmin = computed(() => me.value?.role === 'admin')
   const isCreatingTopic = computed(() => createTopicMutation.isPending.value)
   const showCategorySidebar = computed(() => feed.value === 'categories')

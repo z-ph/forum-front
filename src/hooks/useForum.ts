@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/vue-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/vue-query'
 import { ref, type Ref } from 'vue'
 import type {
   AuthPayload,
@@ -71,7 +71,7 @@ async function getForumHome(): Promise<ForumHomeData> {
   const userMap = buildUserMap([], rawTopics)
   const topics: ForumTopic[] = rawTopics.map((t) => toForumTopic(t, userMap))
 
-  return { me, categories, availableTags, topics }
+  return { me, categories, availableTags, topics, totalTopics: topics.length }
 }
 
 async function getTopicDetail(topicId: string): Promise<ForumTopicDetail> {
@@ -89,20 +89,6 @@ async function getTopicDetail(topicId: string): Promise<ForumTopicDetail> {
   const replies: ForumReply[] = (replyRes.data?.records ?? []).map((r) => toForumReply(r, userMap))
 
   return toForumTopicDetail(topicRes.data, userMap, replies)
-}
-
-async function fetchChildReplies(parentReplyId: string): Promise<ForumReply[]> {
-  const res = await replyApi.getReplyChildPage({
-    parentReplyId: Number(parentReplyId),
-    pageNum: 1,
-    pageSize: 3,
-  })
-
-  if (!isApiSuccess(res)) {return []}
-
-  const userMap = buildUserMap([], [])
-  extendUserMapFromReplies(userMap, res.data?.records ?? [])
-  return (res.data?.records ?? []).map((r) => toForumReply(r, userMap))
 }
 
 async function loginUser(payload: AuthPayload): Promise<ForumUser> {
@@ -231,10 +217,30 @@ export function useTopicDetailQuery(topicId: string) {
   })
 }
 
-export function useChildRepliesQuery(parentReplyId: string, enabled: Ref<boolean>) {
-  return useQuery({
+export function useChildRepliesInfiniteQuery(parentReplyId: string, enabled: Ref<boolean>) {
+  return useInfiniteQuery({
     queryKey: forumKeys.childReplies(parentReplyId),
-    queryFn: () => fetchChildReplies(parentReplyId),
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await replyApi.getReplyChildPage({
+        parentReplyId: Number(parentReplyId),
+        pageNum: pageParam as number,
+        pageSize: 3,
+      })
+      if (!isApiSuccess(res) || !res.data) {
+        return { replies: [], total: 0 }
+      }
+      const userMap = buildUserMap([], [])
+      extendUserMapFromReplies(userMap, res.data.records ?? [])
+      return {
+        replies: (res.data.records ?? []).map((r) => toForumReply(r, userMap)),
+        total: res.data.total,
+      }
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const loadedCount = allPages.reduce((sum, page) => sum + page.replies.length, 0)
+      return loadedCount < lastPage.total ? allPages.length + 1 : undefined
+    },
     enabled,
   })
 }
