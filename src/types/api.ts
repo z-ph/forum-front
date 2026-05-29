@@ -20,7 +20,7 @@ export interface AttachmentVO {
   fileName: string
   fileSize: number
   fileType: 'IMAGE' | 'FILE'
-  url: string
+  url: string | null
   downloadUrl: string
   relatedType: 'TOPIC' | 'REPLY'
   relatedId: number

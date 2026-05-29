@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, h } from 'vue'
 import './style.css'
 import App from './App.vue'
 import { VueQueryPlugin } from '@tanstack/vue-query'
@@ -7,30 +7,51 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'md-editor-v3/lib/style.css'
 import { applyThemeColor } from './core/theme'
-import { configureValidationReporter } from './core/schemas'
+import { configureValidationReporter, getValidationToastEnabled, setValidationToastEnabled } from './core/schemas'
 
 if (import.meta.env.DEV) {
-  // Dev: notify via Element Plus toast for instant visibility
   import('element-plus').then(({ ElNotification }) => {
     configureValidationReporter((report) => {
-      ElNotification({
+      if (!getValidationToastEnabled()) { return }
+      const notification = ElNotification({
         title: `数据校验失败: ${report.schema}`,
-        message: report.issues.join('; '),
+        message: h('div', [
+          h('span', report.issues.join('; ')),
+          h(
+            'button',
+            {
+              style: {
+                display: 'inline-block',
+                marginTop: '8px',
+                padding: '0',
+                border: 'none',
+                background: 'none',
+                color: 'var(--el-color-primary)',
+                cursor: 'pointer',
+                fontSize: '12px',
+              },
+              onClick: () => {
+                setValidationToastEnabled(false)
+                notification.close()
+              },
+            },
+            '不再弹窗',
+          ),
+        ]),
         type: 'warning',
         duration: 6000,
       })
     })
   })
-} else {
-  // Production: POST to monitoring endpoint (configurable via VITE_MONITOR_VALIDATION_URL)
-  configureValidationReporter((report) => {
-    const url = import.meta.env.VITE_MONITOR_VALIDATION_URL
-    if (!url) { return }
-    const body = JSON.stringify(report)
-    // Use sendBeacon for reliable delivery (doesn't block page unload)
-    navigator.sendBeacon?.(url, body)
-  })
 }
+
+// Production: POST to monitoring endpoint (configurable via VITE_MONITOR_VALIDATION_URL)
+configureValidationReporter((report) => {
+  const url = import.meta.env.VITE_MONITOR_VALIDATION_URL
+  if (!url) { return }
+  const body = JSON.stringify(report)
+  navigator.sendBeacon?.(url, body)
+})
 
 const app = createApp(App)
 app.use(router)

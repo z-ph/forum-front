@@ -10,7 +10,7 @@ export const AttachmentVOSchema = z.object({
   fileName: z.string(),
   fileSize: z.number(),
   fileType: z.enum(['IMAGE', 'FILE']),
-  url: z.string(),
+  url: z.string().nullable(),
   downloadUrl: z.string(),
   relatedType: z.enum(['TOPIC', 'REPLY']),
   relatedId: z.number(),
@@ -43,7 +43,7 @@ export const TopicVOSchema = z.object({
   createTime: z.string(),
   updateTime: z.string().nullable(),
   isDeleted: z.number(),
-  tags: z.array(TagVOSchema),
+  tags: z.array(TagVOSchema).nullable(),
   attachments: z.array(AttachmentVOSchema).nullable().optional(),
 })
 
@@ -151,20 +151,40 @@ const failureCounts = new Map<string, number>()
 const MAX_HISTORY = 200
 const reportHistory: ValidationReport[] = []
 
-/** External reporter callback — configure via configureValidationReporter */
-let externalReporter: ((report: ValidationReport) => void) | null = null
+/** External reporter callbacks — configure via addValidationReporter */
+const externalReporters: Array<(report: ValidationReport) => void> = []
 
 /**
- * Configure a custom reporter for validation failures.
- * Called for every failed validation. Use for HTTP telemetry, logging, etc.
+ * Add a custom reporter for validation failures.
+ * Called for every failed validation. Use for toast notifications, HTTP telemetry, logging, etc.
  */
+export function addValidationReporter(fn: (report: ValidationReport) => void): void {
+  externalReporters.push(fn)
+}
+
+/** @deprecated use addValidationReporter instead */
 export function configureValidationReporter(fn: (report: ValidationReport) => void): void {
-  externalReporter = fn
+  addValidationReporter(fn)
 }
 
 /** Get current failure statistics per schema */
 export function getValidationStats(): Record<string, number> {
   return Object.fromEntries(failureCounts)
+}
+
+const TOAST_STORAGE_KEY = '__forum_validation_toast_enabled'
+
+/** Whether validation failure toast notifications are enabled */
+export function getValidationToastEnabled(): boolean {
+  try {
+    const stored = localStorage.getItem(TOAST_STORAGE_KEY)
+    return stored !== null ? stored === 'true' : true // default: enabled
+  } catch { return true }
+}
+
+/** Toggle validation failure toast on/off */
+export function setValidationToastEnabled(enabled: boolean): void {
+  try { localStorage.setItem(TOAST_STORAGE_KEY, String(enabled)) } catch { /* noop */ }
 }
 
 /** Get recent validation reports */
@@ -223,8 +243,10 @@ function reportFailure(schema: string, data: unknown, issues: { path: string; me
   reportHistory.push(report)
   if (reportHistory.length > MAX_HISTORY) {reportHistory.shift()}
 
-  // Call external reporter (HTTP telemetry, etc.)
-  externalReporter?.(report)
+  // Call external reporters (toast, HTTP telemetry, etc.)
+  for (const reporter of externalReporters) {
+    reporter(report)
+  }
 }
 
 // ============================================================
