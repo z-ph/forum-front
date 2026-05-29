@@ -147,6 +147,10 @@ export interface ValidationReport {
 /** Per-schema failure counter for diagnostics */
 const failureCounts = new Map<string, number>()
 
+/** Ring buffer of recent reports (last 200) for export/download */
+const MAX_HISTORY = 200
+const reportHistory: ValidationReport[] = []
+
 /** External reporter callback — configure via configureValidationReporter */
 let externalReporter: ((report: ValidationReport) => void) | null = null
 
@@ -161,6 +165,37 @@ export function configureValidationReporter(fn: (report: ValidationReport) => vo
 /** Get current failure statistics per schema */
 export function getValidationStats(): Record<string, number> {
   return Object.fromEntries(failureCounts)
+}
+
+/** Get recent validation reports */
+export function getValidationReports(): ValidationReport[] {
+  return [...reportHistory]
+}
+
+/** Download all accumulated validation data as a JSON file */
+export function downloadValidationData(): void {
+  const data = {
+    exportedAt: new Date().toISOString(),
+    stats: Object.fromEntries(failureCounts),
+    totalFailures: reportHistory.length,
+    reports: reportHistory,
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `validation-data-${Date.now()}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// Make validation diagnostics accessible from browser console
+if (typeof window !== 'undefined') {
+  ;(window as unknown as Record<string, unknown>).__forumValidation = {
+    stats: getValidationStats,
+    reports: getValidationReports,
+    download: downloadValidationData,
+  }
 }
 
 /** Internal: report a validation failure through all channels */
@@ -183,6 +218,10 @@ function reportFailure(schema: string, data: unknown, issues: { path: string; me
     'font-weight:normal',
     `\n  Issues: ${report.issues.join('; ')}`,
   )
+
+  // Store in ring buffer
+  reportHistory.push(report)
+  if (reportHistory.length > MAX_HISTORY) {reportHistory.shift()}
 
   // Call external reporter (HTTP telemetry, etc.)
   externalReporter?.(report)
