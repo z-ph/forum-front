@@ -4,6 +4,9 @@ import { fileURLToPath } from 'url'
 import vue from '@vitejs/plugin-vue'
 import VueRouter from 'unplugin-vue-router/vite'
 import tailwindcss from '@tailwindcss/vite'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -26,6 +29,17 @@ export default defineConfig(({ mode }) => {
       }),
       tailwindcss(),
       vue(),
+      AutoImport({
+        resolvers: [ElementPlusResolver()],
+        imports: [{
+          'element-plus': ['useFormItem'],
+        }],
+        dts: 'src/auto-imports.d.ts',
+      }),
+      Components({
+        resolvers: [ElementPlusResolver()],
+        dts: 'src/components.d.ts',
+      }),
     ],
     server: {
       proxy: {
