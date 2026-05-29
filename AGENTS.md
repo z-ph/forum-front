@@ -45,5 +45,12 @@ There is no committed unit test suite yet. Until one is added, treat `pnpm typec
 ## Commit & Pull Request Guidelines
 Recent history uses short, focused Chinese subjects such as `添加组件库依赖` and `修改项目名称`. Keep commits small, imperative, and limited to one change. For pull requests, include a brief summary, linked issue or task when available, screenshots for visible UI changes, and note any config or API contract changes such as updates to `openapi.yaml` or `.env.example`.
 
+## Shell Command Restrictions
+**Hard rule**: bash/pwsh 禁止执行需要手动中断（Ctrl+C / Kill）才能释放终端的前台交互式/监听任务。只允许：
+1. **前台同步任务** — 自动执行完毕并退出（如 `pnpm build`, `git status`, `pnpm typecheck`）
+2. **后台任务** — 非交互式，可自行结束
+
+**绝对禁止**：`pnpm dev`（前台模式）、`pnpm preview`（前台模式）、`tail -f`、未加后台标识的服务启动等。
+
 ## Configuration Tips
 Environment values live in `.env` and `.env.example`. `VITE_API_URL` drives the Vite proxy target, so update the example file whenever new frontend configuration is introduced.
