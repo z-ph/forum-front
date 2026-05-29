@@ -8,6 +8,7 @@ const router = useRouter()
 const mode = ref<'login' | 'register'>('login')
 const loginMutation = useLoginMutation()
 const registerMutation = useRegisterMutation()
+const isDev = import.meta.env.DEV
 const isAuthPending = computed(() => loginMutation.isPending.value || registerMutation.isPending.value)
 
 const form = reactive({
@@ -75,7 +76,7 @@ async function handleSubmit() {
         <h1 class="m-0 mb-3.5 text-[clamp(1.9rem,2.8vw,2.8rem)] leading-[1.16] text-[#162134]">
           登录后继续浏览、发帖和回复。
         </h1>
-        <p class="m-0 leading-[1.8] text-[#60718b]">
+        <p v-if="isDev" class="m-0 leading-[1.8] text-[#60718b]">
           账号页保持和论坛首页一致的扁平结构，不额外做展示型包装，重点仍然是尽快进入核心讨论流程。
         </p>
 
@@ -85,14 +86,6 @@ async function handleSubmit() {
             <dd class="mt-1 text-[0.94rem] text-[#1d2738]">
               {{ mode === 'login' ? '登录已有账号' : '创建新账号' }}
             </dd>
-          </div>
-          <div class="py-3.5 [&+div]:border-t [&+div]:border-[var(--forum-border)]">
-            <dt class="text-[0.78rem] text-[#75839a]">流程覆盖</dt>
-            <dd class="mt-1 text-[0.94rem] text-[#1d2738]">注册、登录、发帖、跟帖</dd>
-          </div>
-          <div class="py-3.5">
-            <dt class="text-[0.78rem] text-[#75839a]">数据来源</dt>
-            <dd class="mt-1 text-[0.94rem] text-[#1d2738]">Mock 数据</dd>
           </div>
         </dl>
       </section>
