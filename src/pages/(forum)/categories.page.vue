@@ -1,17 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useForumFeed } from '../../hooks/useForumFeed'
 import ForumFeedPage from '../../components/forum/ForumFeedPage.vue'
-import type { ForumTopic } from '../../types/forum'
 
-defineProps<{
-  topics: ForumTopic[]
-  emptyDescription: string
-  isLoading: boolean
-  isError: boolean
-}>()
-
-const emit = defineEmits<{
-  openTopic: [topicId: string]
-}>()
+const feed = computed(() => 'categories' as const)
+const { topics, isLoading, isError, emptyDescription, openTopic } = useForumFeed(feed)
 </script>
 
 <template>
@@ -20,6 +13,6 @@ const emit = defineEmits<{
     :empty-description="emptyDescription"
     :is-loading="isLoading"
     :is-error="isError"
-    @open-topic="emit('openTopic', $event)"
+    @open-topic="openTopic"
   />
 </template>

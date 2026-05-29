@@ -1,25 +1,23 @@
 <script setup lang="ts">
-import { computed, ref, onUnmounted } from 'vue'
+import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
-import ReplyComposer from '../../components/forum/ReplyComposer.vue'
-import RichTextRenderer from '../../components/forum/RichTextRenderer.vue'
-import { useCreateReplyMutation, useTopicDetailQuery } from '../../hooks/useForum'
-import * as replyApi from '../../services/replyApi'
+import ReplyComposer from '../components/forum/ReplyComposer.vue'
+import RichTextRenderer from '../components/forum/RichTextRenderer.vue'
+import { useCreateReplyMutation, useTopicDetailQuery } from '../hooks/useForum'
+import * as replyApi from '../services/replyApi'
 import {
   buildUserMap,
   extendUserMapFromReplies,
   toForumReply,
-} from '../../services/forumAdapter'
-import type { ForumReply } from '../../types/forum'
+} from '../services/forumAdapter'
+import type { ForumReply } from '../types/forum'
+import { isApiSuccess } from '../core/apiClient'
 
-const route = useRoute()
+const route = useRoute('/topics.[id]')
 const router = useRouter()
-const topicId = computed(() => {
-  const params = route.params as { id?: string }
-  return params.id ?? ''
-})
+const topicId = computed(() => route.params.id)
 
 const { data, isLoading, isError } = useTopicDetailQuery(topicId.value)
 const replyMutation = useCreateReplyMutation()
@@ -32,10 +30,10 @@ const childRepliesMap = ref<Record<string, ForumReply[]>>({})
 const childTotalMap = ref<Record<string, number>>({})
 const childPagesMap = ref<Record<string, number>>({})
 
-let isMounted = true
-onUnmounted(() => {
-  isMounted = false
-})
+// TODO: Migrate child reply fetching from manual refs (childRepliesMap,
+// childTotalMap, childPagesMap) to TanStack Query useInfiniteQuery. The
+// current manual approach works correctly but doesn't benefit from
+// TanStack Query's caching and deduplication.
 
 async function handleReply(content: string) {
   if (!data.value) {
@@ -73,8 +71,7 @@ async function expandReplies(replyId: string) {
       pageNum: 1,
       pageSize: 3,
     })
-    if (!isMounted) {return}
-    if (res.code === 1 && res.data) {
+    if (isApiSuccess(res) && res.data) {
       const userMap = buildUserMap([], [])
       extendUserMapFromReplies(userMap, res.data.records)
       childRepliesMap.value[replyId] = res.data.records.map((r) => toForumReply(r, userMap))
@@ -95,8 +92,7 @@ async function loadMoreChildReplies(replyId: string) {
       pageNum: nextPage,
       pageSize: 3,
     })
-    if (!isMounted) {return}
-    if (res.code === 1 && res.data) {
+    if (isApiSuccess(res) && res.data) {
       const userMap = buildUserMap([], [])
       extendUserMapFromReplies(userMap, res.data.records)
       const newReplies = res.data.records.map((r) => toForumReply(r, userMap))
@@ -120,7 +116,7 @@ async function loadMoreChildReplies(replyId: string) {
       <el-button
         text
         class="ml-3 mt-[18px] mb-1.5 md:ml-6"
-        @click="router.push({ path: '/' })"
+        @click="router.push({ name: '/(forum)' })"
       >
         <el-icon><ArrowLeft /></el-icon>
         返回论坛首页

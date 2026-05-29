@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 onMounted(() => {
-  void router.replace({ path: '/latest' })
+  void router.replace({ name: '/(forum)/latest' })
 })
 </script>
 

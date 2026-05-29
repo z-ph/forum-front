@@ -126,7 +126,7 @@ function avatarColor(name: string): string {
       </div>
       <p class="mb-2 text-[0.95rem] font-medium text-[#2a374a]">{{ emptyDescription || '当前还没有话题' }}</p>
       <p class="mb-6 max-w-[340px] text-[0.82rem] leading-[1.55] text-[#6f7d94]">成为第一个发起讨论的人，分享你的想法或问题。</p>
-      <el-button type="primary" size="large" @click="router.push({ path: '/topics/new' })">
+      <el-button type="primary" size="large" @click="router.push({ name: '/topics.new' })">
         发布第一个话题
       </el-button>
     </div>

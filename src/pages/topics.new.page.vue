@@ -2,8 +2,8 @@
 import { computed, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-import RichTextEditor from '../../components/forum/RichTextEditor.vue'
-import { useCreateTopicMutation, useForumHomeQuery } from '../../hooks/useForum'
+import RichTextEditor from '../components/forum/RichTextEditor.vue'
+import { useCreateTopicMutation, useForumHomeQuery } from '../hooks/useForum'
 
 const router = useRouter()
 const { data } = useForumHomeQuery()
@@ -33,7 +33,7 @@ async function submitTopic() {
       tags: form.tags,
     })
     ElMessage.success('话题已发布')
-    await router.push({ path: topic.id === 'pending' ? '/latest' : `/topics/${topic.id}` })
+    await router.push(topic.id === 'pending' ? { name: '/(forum)/latest' } : { name: '/topics.[id]', params: { id: topic.id } })
   } catch (error) {
     ElMessage.error((error as Error).message)
   }
@@ -49,7 +49,7 @@ async function submitTopic() {
           <h1 class="mt-1 text-2xl font-bold text-[#162235]">提出你的问题</h1>
           <p class="mt-2 text-sm text-[#72809a]">标题和正文必填，分类和标签可稍后补充。</p>
         </div>
-        <el-button @click="router.push({ path: '/latest' })">返回列表</el-button>
+        <el-button @click="router.push({ name: '/(forum)/latest' })">返回列表</el-button>
       </div>
 
       <el-form label-position="top">
@@ -74,7 +74,7 @@ async function submitTopic() {
         </el-form-item>
 
         <div class="flex justify-end gap-3">
-          <el-button @click="router.push({ path: '/latest' })">取消</el-button>
+          <el-button @click="router.push({ name: '/(forum)/latest' })">取消</el-button>
           <el-button type="primary" :loading="isCreatePending" :disabled="!canSubmit" @click="submitTopic">发布话题</el-button>
         </div>
       </el-form>

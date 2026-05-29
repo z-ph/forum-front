@@ -47,7 +47,7 @@ async function handleSubmit() {
       ElMessage.success('注册成功，已自动登录')
     }
 
-    void router.push({ path: '/' })
+    void router.push({ name: '/(forum)' })
   } catch (error) {
     ElMessage.error((error as Error).message || '提交失败，请稍后重试')
   }
@@ -66,7 +66,7 @@ async function handleSubmit() {
           <strong class="block text-[1.2rem] text-[#182437]">社区论坛</strong>
           <span class="mt-1 block text-[0.82rem] text-[#74839a]">账号入口</span>
         </div>
-        <el-button text @click="router.push({ path: '/' })">返回论坛</el-button>
+        <el-button text @click="router.push({ name: '/(forum)' })">返回论坛</el-button>
       </header>
 
       <section
@@ -92,7 +92,7 @@ async function handleSubmit() {
           </div>
           <div class="py-3.5">
             <dt class="text-[0.78rem] text-[#75839a]">数据来源</dt>
-            <dd class="mt-1 text-[0.94rem] text-[#1d2738]">TanStack Query mock hooks</dd>
+            <dd class="mt-1 text-[0.94rem] text-[#1d2738]">Mock 数据</dd>
           </div>
         </dl>
       </section>
@@ -131,7 +131,7 @@ async function handleSubmit() {
           </el-form-item>
 
           <div class="mt-2.5 flex flex-col items-stretch justify-between gap-2.5 sm:flex-row sm:items-center">
-            <el-button text @click="router.push({ path: '/' })">返回论坛</el-button>
+<el-button text @click="router.push({ name: '/(forum)' })">返回论坛</el-button>
             <el-button
               type="primary"
               :loading="isAuthPending"

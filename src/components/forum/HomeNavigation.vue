@@ -22,9 +22,9 @@ const emit = defineEmits<{
 
 const router = useRouter()
 
-const feedItems: Array<{ key: ForumTopicFeed; label: string; title: string; path: string }> = [
-  { key: 'categories', label: '类别', title: '按类别查看话题', path: '/categories' },
-  { key: 'latest', label: '最新', title: '按最后活动查看最新话题', path: '/latest' },
+const feedItems = [
+  { key: 'categories' as ForumTopicFeed, label: '类别', title: '按类别查看话题', name: '/(forum)/categories' as const },
+  { key: 'latest' as ForumTopicFeed, label: '最新', title: '按最后活动查看最新话题', name: '/(forum)/latest' as const },
 ]
 
 function updateCategory(value: string) {
@@ -79,7 +79,7 @@ const sharedQuery = computed(() => ({
           </el-select>
         </div>
 
-        <el-button class="min-h-11 px-4" type="primary" @click="router.push({ path: '/topics/new' })">
+        <el-button class="min-h-11 px-4" type="primary" @click="router.push({ name: '/topics.new' })">
           <el-icon class="mr-1.5">
             <EditPen />
           </el-icon>
@@ -92,7 +92,7 @@ const sharedQuery = computed(() => ({
           <ul class="flex min-w-max list-none items-center gap-1 p-0">
             <li v-for="item in feedItems" :key="item.key">
               <router-link
-                :to="{ path: item.path, query: sharedQuery }"
+                :to="{ name: item.name, query: sharedQuery }"
                 class="inline-flex min-h-11 items-center rounded-full border px-3.5 py-[7px] text-[0.84rem] font-medium transition-colors duration-200"
                 :class="item.key === props.activeFeed
                   ? 'border-[var(--forum-primary)] bg-[color-mix(in_srgb,var(--forum-primary)_10%,white)] text-[#14325f]'

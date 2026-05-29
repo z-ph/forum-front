@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 function goHome() {
-  void router.push({ path: '/latest' })
+  void router.push({ name: '/(forum)/latest' })
 }
 </script>
 

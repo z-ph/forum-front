@@ -6,39 +6,26 @@ import CategorySidebar from '../components/forum/CategorySidebar.vue'
 import HomeNavigation from '../components/forum/HomeNavigation.vue'
 import TopicComposer from '../components/forum/TopicComposer.vue'
 import { useForumHomeState } from '../hooks/useForumHomeState'
+import { useForumFeed } from '../hooks/useForumFeed'
 
 const route = useRoute()
 const feed = computed<'categories' | 'latest'>(() => (
-  route.path === '/categories' ? 'categories' : 'latest'
+  route.name === '/(forum)/categories' ? 'categories' : 'latest'
 ))
 
 const {
-  me,
-  categories,
-  availableTags,
-  totalTopics,
-  isAdmin,
-  isCreatingTopic,
-  isLoading,
-  isError,
-  composeOpen,
+  data,
+  me, categories, availableTags, totalTopics, isAdmin,
+  isCreatingTopic, composeOpen, showCategorySidebar,
   activeFeed,
-  activeCategoryId,
-  activeTag,
-  summaryTitle,
-  summaryHint,
-  showCategorySidebar,
-  topics,
-  emptyDescription,
-  updateCategory,
-  updateTag,
-  openTopic,
-  handleCreateTopic,
-  handleLogout,
-  handleAuth,
-  handleSearch,
-  handleCompose,
+  handleCreateTopic, handleLogout, handleAuth, handleSearch, handleCompose,
 } = useForumHomeState(feed)
+
+const {
+  topics, summaryTitle, summaryHint,
+  activeCategoryId, activeTag,
+  updateCategory, updateTag,
+} = useForumFeed(feed, data)
 </script>
 
 <template>
@@ -85,16 +72,7 @@ const {
           </section>
 
           <section class="min-w-0">
-            <RouterView v-slot="{ Component }">
-              <component
-                :is="Component"
-                :topics="topics"
-                :empty-description="emptyDescription"
-                :is-loading="isLoading"
-                :is-error="isError"
-                @open-topic="openTopic"
-              />
-            </RouterView>
+            <RouterView />
           </section>
         </div>
       </main>
