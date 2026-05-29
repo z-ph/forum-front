@@ -6,6 +6,7 @@ import * as categoryApi from '../services/categoryApi'
 import * as tagApi from '../services/tagApi'
 import type { AdminUserQuery, AdminTopicQuery } from '../types/admin'
 import { forumKeys } from './useForum'
+import { isApiSuccess } from '../core/apiClient'
 
 // ── Query key factory ──────────────────────────────────────
 
@@ -23,7 +24,7 @@ export function useAdminUsersQuery(params: Ref<AdminUserQuery>) {
     queryKey: computed(() => adminKeys.users(params.value)),
     queryFn: async () => {
       const res = await userApi.getUserPage(params.value)
-      if (res.code !== 1) {throw new Error(res.msg || '加载用户列表失败')}
+      if (!isApiSuccess(res)) {throw new Error(res.msg || '加载用户列表失败')}
       return res.data
     },
     staleTime: 30_000,
@@ -38,7 +39,7 @@ export function useAdminTopicsQuery(params: Ref<AdminTopicQuery>) {
     queryKey: computed(() => adminKeys.topics(params.value)),
     queryFn: async () => {
       const res = await topicApi.pageTopics(params.value)
-      if (res.code !== 1) {throw new Error(res.msg || '加载话题列表失败')}
+      if (!isApiSuccess(res)) {throw new Error(res.msg || '加载话题列表失败')}
       return res.data
     },
     staleTime: 30_000,
@@ -53,7 +54,7 @@ export function useAdminCategoriesQuery() {
     queryKey: adminKeys.categories,
     queryFn: async () => {
       const res = await categoryApi.getAllCategoriesTree()
-      if (res.code !== 1) {throw new Error(res.msg || '加载分类列表失败')}
+      if (!isApiSuccess(res)) {throw new Error(res.msg || '加载分类列表失败')}
       return res.data
     },
     staleTime: 30_000,
@@ -67,7 +68,7 @@ export function useAdminTagsQuery() {
     queryKey: adminKeys.tags,
     queryFn: async () => {
       const res = await tagApi.selectAllTags()
-      if (res.code !== 1) {throw new Error(res.msg || '加载标签列表失败')}
+      if (!isApiSuccess(res)) {throw new Error(res.msg || '加载标签列表失败')}
       return res.data
     },
     staleTime: 30_000,
@@ -155,7 +156,7 @@ export function useAdminAuth() {
     queryKey: ['admin', 'auth'],
     queryFn: async () => {
       const res = await userApi.getCurrentUser()
-      if (res.code !== 1 || !res.data) {throw new Error('未登录')}
+      if (!isApiSuccess(res) || !res.data) {throw new Error('未登录')}
       return res.data
     },
     staleTime: 60_000,

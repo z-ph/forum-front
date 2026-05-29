@@ -29,6 +29,7 @@ import * as replyApi from '../services/replyApi'
 import * as tagApi from '../services/tagApi'
 import * as topicApi from '../services/topicApi'
 import * as userApi from '../services/userApi'
+import { isApiSuccess } from '../core/apiClient'
 
 export const forumKeys = {
   home: ['forum', 'home'] as const,
@@ -50,10 +51,10 @@ async function getForumHome(): Promise<ForumHomeData> {
     topicApi.selectAllTopics().catch(() => ({ code: 0, msg: '', data: [] as topicApi.TopicVO[] })),
   ])
 
-  const me = userRes.code === 200 ? toForumUser(userRes.data) : null
+  const me = isApiSuccess(userRes) ? toForumUser(userRes.data) : null
 
   // Update tag map so createTopicReal can resolve tag names to IDs.
-  if (tagRes.code === 1 && tagRes.data) {
+  if (isApiSuccess(tagRes) && tagRes.data) {
     const map = new Map<string, number>()
     for (const tag of tagRes.data) {
       map.set(tag.name, tag.id)
@@ -61,12 +62,12 @@ async function getForumHome(): Promise<ForumHomeData> {
     tagMap.value = map
   }
 
-  const rawCategories = categoryRes.code === 1 ? flattenCategoryTree(categoryRes.data ?? []) : []
+  const rawCategories = isApiSuccess(categoryRes) ? flattenCategoryTree(categoryRes.data ?? []) : []
   const categories: ForumCategory[] = rawCategories.map((c) => toForumCategory(c))
 
-  const availableTags: string[] = tagRes.code === 1 ? (tagRes.data ?? []).map((t) => t.name) : []
+  const availableTags: string[] = isApiSuccess(tagRes) ? (tagRes.data ?? []).map((t) => t.name) : []
 
-  const rawTopics = topicRes.code === 1 ? (topicRes.data ?? []) : []
+  const rawTopics = isApiSuccess(topicRes) ? (topicRes.data ?? []) : []
   const userMap = buildUserMap([], rawTopics)
   const topics: ForumTopic[] = rawTopics.map((t) => toForumTopic(t, userMap))
 
@@ -81,7 +82,7 @@ async function getTopicDetail(topicId: string): Promise<ForumTopicDetail> {
     replyApi.getReplyTopPage({ topicId: id, pageNum: 1, pageSize: 50 }),
   ])
 
-  if (topicRes.code !== 1) {throw new Error(topicRes.msg || '话题不存在')}
+  if (!isApiSuccess(topicRes)) {throw new Error(topicRes.msg || '话题不存在')}
 
   const userMap = buildUserMap([], topicRes.data ? [topicRes.data] : [])
   extendUserMapFromReplies(userMap, replyRes.data?.records ?? [])
@@ -97,7 +98,7 @@ async function fetchChildReplies(parentReplyId: string): Promise<ForumReply[]> {
     pageSize: 3,
   })
 
-  if (res.code !== 1) {return []}
+  if (!isApiSuccess(res)) {return []}
 
   const userMap = buildUserMap([], [])
   extendUserMapFromReplies(userMap, res.data?.records ?? [])
@@ -106,10 +107,10 @@ async function fetchChildReplies(parentReplyId: string): Promise<ForumReply[]> {
 
 async function loginUser(payload: AuthPayload): Promise<ForumUser> {
   const res = await userApi.login({ email: payload.email, password: payload.password })
-  if (res.code !== 200) {throw new Error(res.msg || '登录失败')}
+  if (!isApiSuccess(res)) {throw new Error(res.msg || '登录失败')}
 
   const userRes = await userApi.getCurrentUser()
-  if (userRes.code !== 200) {throw new Error('无法获取用户信息')}
+  if (!isApiSuccess(userRes)) {throw new Error('无法获取用户信息')}
   return toForumUser(userRes.data)
 }
 
@@ -120,10 +121,11 @@ async function registerUser(payload: RegisterPayload): Promise<ForumUser> {
     nickname: payload.nickname,
     password: payload.password,
   })
-  if (res.code !== 200) {throw new Error(res.msg || '注册失败')}
+  if (!isApiSuccess(res)) {throw new Error(res.msg || '注册失败')}
+  localStorage.setItem('token', res.data)
 
   const userRes = await userApi.getCurrentUser()
-  if (userRes.code !== 200) {throw new Error('无法获取用户信息')}
+  if (!isApiSuccess(userRes)) {throw new Error('无法获取用户信息')}
   return toForumUser(userRes.data)
 }
 
@@ -131,6 +133,16 @@ async function logoutUser(): Promise<void> {
   localStorage.removeItem('token')
 }
 
+/**
+ * Create a reply via the real backend API.
+ *
+ * Note: The backend `createReply` endpoint returns only a success string
+ * (ApiResponse<string>), not the created ReplyVO with its generated ID.
+ * Therefore we return a placeholder ForumReply with id = 'pending'.
+ * The mutation's onSuccess handler invalidates forumKeys.home and
+ * forumKeys.detail(topicId), which triggers a refetch of the topic detail
+ * page — at that point the reply will appear with its real server-assigned ID.
+ */
 async function createReplyReal(payload: CreateReplyPayload): Promise<ForumReply> {
   const res = await replyApi.createReply({
     topicId: Number(payload.topicId),
@@ -138,8 +150,10 @@ async function createReplyReal(payload: CreateReplyPayload): Promise<ForumReply>
     content: payload.content,
   })
 
-  if (res.code !== 1) {throw new Error(res.msg || '回复失败')}
+  if (!isApiSuccess(res)) {throw new Error(res.msg || '回复失败')}
 
+  // Backend returns ApiResponse<string>, not the created object.
+  // Placeholder id='pending' until the invalidation-triggered refetch resolves.
   return {
     id: 'pending',
     author: { id: '0', name: '', handle: '', title: '', role: 'member' as const, avatar: '' },
@@ -153,8 +167,17 @@ async function createReplyReal(payload: CreateReplyPayload): Promise<ForumReply>
 /**
  * Create a topic via the real backend API.
  * Only title and content are required; category and tags are optional.
- * Returns a fallback ForumTopicDetail with a `pending` id since the API
- * returns only a success string rather than the created topic object.
+ *
+ * NOTE — pending ID: The backend `createTopic` endpoint returns
+ * ApiResponse<string> (a success message) rather than the created
+ * TopicVO with its server-generated ID. We therefore return a
+ * placeholder ForumTopicDetail with id = 'pending'.
+ *
+ * The mutation's onSuccess handler invalidates forumKeys.home, which
+ * triggers a background refetch. After refetch, the new topic appears
+ * in the home feed with its real ID. Until then, consumers (e.g.
+ * useForumHomeState.handleCreateTopic) redirect conditionally based on
+ * the 'pending' sentinel value.
  */
 async function createTopicReal(payload: CreateTopicPayload): Promise<ForumTopicDetail> {
   const categoryId = payload.categoryId ? Number(payload.categoryId) : undefined
@@ -172,7 +195,7 @@ async function createTopicReal(payload: CreateTopicPayload): Promise<ForumTopicD
     tagIds: tagIds.length ? tagIds : undefined,
   })
 
-  if (res.code !== 1) {throw new Error(res.msg || '发布失败')}
+  if (!isApiSuccess(res)) {throw new Error(res.msg || '发布失败')}
 
   return {
     id: 'pending',
