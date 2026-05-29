@@ -17,7 +17,7 @@ export interface TopicVO {
   createTime: string
   updateTime: string | null
   isDeleted: number
-  tags: TagVO[]
+  tags: TagVO[] | null
   attachments?: AttachmentVO[]
 }
 

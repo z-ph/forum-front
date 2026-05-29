@@ -137,9 +137,23 @@ export function pageSchema<T extends ZodType>(itemSchema: T) {
 // Validation alerting system
 // ============================================================
 
+/** Single validation issue with full field-level context */
+export interface ValidationIssue {
+  /** Dot-separated field path, e.g. "title", "tags.0.name" */
+  path: string
+  /** Human-readable error message */
+  message: string
+  /** Zod error code, e.g. "invalid_type", "too_small" */
+  code: string
+  /** Expected type (present for invalid_type errors) */
+  expected?: string
+  /** Received type (present for invalid_type errors) */
+  received?: string
+}
+
 export interface ValidationReport {
   schema: string
-  issues: string[]
+  issues: ValidationIssue[]
   data: unknown
   timestamp: number
 }
@@ -219,24 +233,30 @@ if (typeof window !== 'undefined') {
 }
 
 /** Internal: report a validation failure through all channels */
-function reportFailure(schema: string, data: unknown, issues: { path: string; message: string }[]) {
+function reportFailure(schema: string, data: unknown, issues: ValidationIssue[]) {
   // Track count
   failureCounts.set(schema, (failureCounts.get(schema) ?? 0) + 1)
 
   const report: ValidationReport = {
     schema,
-    issues: issues.map((i) => i.message),
+    issues,
     data,
     timestamp: Date.now(),
   }
 
   // Always log to console with structured format
   const count = failureCounts.get(schema) ?? 0
+  const issueSummary = issues
+    .map((i) => {
+      const typeInfo = i.expected ? ` (期望 ${i.expected}, 实际 ${i.received})` : ''
+      return `${i.path || '(root)'}: ${i.message}${typeInfo}`
+    })
+    .join('\n    ')
   console.warn(
     `[Validation] %c${schema}%c failed (x${count})`,
     'font-weight:bold;color:#e74c3c',
     'font-weight:normal',
-    `\n  Issues: ${report.issues.join('; ')}`,
+    `\n  Issues:\n    ${issueSummary}`,
   )
 
   // Store in ring buffer
@@ -260,12 +280,21 @@ function reportFailure(schema: string, data: unknown, issues: { path: string; me
 export function validateWithSchema<T>(schema: ZodType<T>, data: unknown, label: string): T {
   const result = schema.safeParse(data)
   if (!result.success) {
-    const issues = result.error.issues.map((i) => ({
-      path: i.path.join('.'),
-      message: i.message,
-    }))
+    const issues: ValidationIssue[] = result.error.issues.map((i) => {
+      const extra = i as unknown as { expected?: string; received?: string }
+      return {
+        path: i.path.join('.') || '(root)',
+        message: i.message,
+        code: i.code,
+        expected: extra.expected,
+        received: extra.received,
+      }
+    })
     reportFailure(label, data, issues)
-    throw new Error(`Data validation failed for ${label}: ${issues.map((i) => i.message).join('; ')}`)
+    const fieldDetails = issues
+      .map((i) => `${i.path}: ${i.message}`)
+      .join('; ')
+    throw new Error(`数据校验失败 [${label}]: ${fieldDetails}`)
   }
   return result.data
 }
@@ -277,10 +306,16 @@ export function validateWithSchema<T>(schema: ZodType<T>, data: unknown, label: 
 export function tryValidate<T>(schema: ZodType<T>, data: unknown, label: string): T | null {
   const result = schema.safeParse(data)
   if (!result.success) {
-    const issues = result.error.issues.map((i) => ({
-      path: i.path.join('.'),
-      message: i.message,
-    }))
+    const issues: ValidationIssue[] = result.error.issues.map((i) => {
+      const extra = i as unknown as { expected?: string; received?: string }
+      return {
+        path: i.path.join('.') || '(root)',
+        message: i.message,
+        code: i.code,
+        expected: extra.expected,
+        received: extra.received,
+      }
+    })
     reportFailure(label, data, issues)
     return null
   }
