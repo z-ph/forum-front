@@ -12,7 +12,7 @@ export interface UserVO {
   role: UserRole
   status: number
   createTime: string
-  updateTime: string
+  updateTime: string | null
 }
 
 export interface RegisterRequest {

@@ -14,6 +14,19 @@ export interface Page<T> {
   pages: number
 }
 
+/** Attachment value object */
+export interface AttachmentVO {
+  id: number
+  fileName: string
+  fileSize: number
+  fileType: 'IMAGE' | 'FILE'
+  url: string
+  downloadUrl: string
+  relatedType: 'TOPIC' | 'REPLY'
+  relatedId: number
+  createTime: string
+}
+
 /** Tag value object (shared across topic and tag services) */
 export interface TagVO {
   id: number
@@ -21,6 +34,6 @@ export interface TagVO {
   creatorId: number
   creatorNickname: string
   createTime: string
-  updateTime: string
+  updateTime: string | null
   isDeleted: number
 }

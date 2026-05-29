@@ -1,5 +1,6 @@
 import axios, { type AxiosError } from 'axios'
 import { apiClientConfig } from './config'
+import router from '../router'
 
 /**
  * Check if an API response indicates success.
@@ -26,7 +27,7 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
-      window.location.href = '/auth'
+      void router.push({ name: '/auth' })
     }
     return Promise.reject(
       error instanceof Error ? error : new Error('Request failed'),

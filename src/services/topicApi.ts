@@ -1,5 +1,5 @@
 import apiClient from '@/core/apiClient'
-import type { ApiResponse, Page, TagVO } from '@/types/api'
+import type { ApiResponse, AttachmentVO, Page, TagVO } from '@/types/api'
 
 // ---------- Topic Types ----------
 
@@ -15,9 +15,10 @@ export interface TopicVO {
   viewCount: number
   replyCount: number
   createTime: string
-  updateTime: string
+  updateTime: string | null
   isDeleted: number
   tags: TagVO[]
+  attachments?: AttachmentVO[]
 }
 
 export interface TopicCreateRequest {
@@ -25,6 +26,14 @@ export interface TopicCreateRequest {
   title: string
   content: string
   tagIds?: number[]
+}
+
+export interface TopicUpdateRequest {
+  categoryId?: number
+  title?: string
+  content?: string
+  tagIds?: number[]
+  deleteAttachmentIds?: number[]
 }
 
 export interface TopicPageQuery {
@@ -37,9 +46,43 @@ export interface TopicPageQuery {
 
 // ---------- API Functions ----------
 
-/** POST /topic - 新增话题 */
+/** Convert topic create request to multipart/form-data */
+function toTopicCreateFormData(data: TopicCreateRequest): FormData {
+  const fd = new FormData()
+  fd.append('topic.categoryId', String(data.categoryId))
+  fd.append('topic.title', data.title)
+  fd.append('topic.content', data.content)
+  if (data.tagIds?.length) {
+    for (const id of data.tagIds) {
+      fd.append('topic.tagIds', String(id))
+    }
+  }
+  return fd
+}
+
+/** Convert topic update request to multipart/form-data */
+function toTopicUpdateFormData(data: TopicUpdateRequest): FormData {
+  const fd = new FormData()
+  if (data.categoryId !== undefined) { fd.append('topic.categoryId', String(data.categoryId)) }
+  if (data.title !== undefined) { fd.append('topic.title', data.title) }
+  if (data.content !== undefined) { fd.append('topic.content', data.content) }
+  if (data.tagIds?.length) {
+    for (const id of data.tagIds) {
+      fd.append('topic.tagIds', String(id))
+    }
+  }
+  if (data.deleteAttachmentIds?.length) {
+    for (const id of data.deleteAttachmentIds) {
+      fd.append('deleteAttachmentIds', String(id))
+    }
+  }
+  return fd
+}
+
+/** POST /topic - 新增话题 (multipart/form-data) */
 export async function createTopic(data: TopicCreateRequest): Promise<ApiResponse<string>> {
-  const response = await apiClient.post<ApiResponse<string>>('/topic', data)
+  const formData = toTopicCreateFormData(data)
+  const response = await apiClient.post<ApiResponse<string>>('/topic', formData)
   return response.data
 }
 
@@ -49,9 +92,10 @@ export async function deleteTopic(id: number): Promise<ApiResponse<string>> {
   return response.data
 }
 
-/** PUT /topic/{id} - 修改话题 */
-export async function updateTopic(id: number, data: TopicCreateRequest): Promise<ApiResponse<string>> {
-  const response = await apiClient.put<ApiResponse<string>>('/topic/' + id, data)
+/** PUT /topic/{id} - 修改话题 (multipart/form-data) */
+export async function updateTopic(id: number, data: TopicUpdateRequest): Promise<ApiResponse<string>> {
+  const formData = toTopicUpdateFormData(data)
+  const response = await apiClient.put<ApiResponse<string>>('/topic/' + id, formData)
   return response.data
 }
 

@@ -15,7 +15,7 @@ export interface CategoryVO {
   creatorId: number
   creatorNickname: string
   createTime: string
-  updateTime: string
+  updateTime: string | null
   isDeleted: number
 }
 

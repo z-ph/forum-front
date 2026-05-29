@@ -1,5 +1,5 @@
 import apiClient from '@/core/apiClient'
-import type { ApiResponse, Page } from '@/types/api'
+import type { ApiResponse, AttachmentVO, Page } from '@/types/api'
 
 export interface ReplyVO {
   id: number
@@ -11,8 +11,9 @@ export interface ReplyVO {
   replyToUserNickname: string
   content: string
   createTime: string
-  updateTime: string
+  updateTime: string | null
   isDeleted: number
+  attachments?: AttachmentVO[]
 }
 
 export interface ReplyCreateRequest {
@@ -33,9 +34,21 @@ export interface ReplyChildPageQuery {
   pageSize?: number
 }
 
-/** POST /reply - 新增回复 */
+/** Convert reply create request to multipart/form-data */
+function toReplyCreateFormData(data: ReplyCreateRequest): FormData {
+  const fd = new FormData()
+  fd.append('reply.topicId', String(data.topicId))
+  fd.append('reply.content', data.content)
+  if (data.parentReplyId !== undefined) {
+    fd.append('reply.parentReplyId', String(data.parentReplyId))
+  }
+  return fd
+}
+
+/** POST /reply - 新增回复 (multipart/form-data) */
 export async function createReply(data: ReplyCreateRequest): Promise<ApiResponse<string>> {
-  const response = await apiClient.post<ApiResponse<string>>('/reply', data)
+  const formData = toReplyCreateFormData(data)
+  const response = await apiClient.post<ApiResponse<string>>('/reply', formData)
   return response.data
 }
 
