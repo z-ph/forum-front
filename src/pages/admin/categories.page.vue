@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
 import AdminPageShell from '../../components/admin/AdminPageShell.vue'
 import {
   useAdminCategoriesQuery,

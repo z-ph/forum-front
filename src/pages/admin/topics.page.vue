@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { reactive, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
 import AdminPageShell from '../../components/admin/AdminPageShell.vue'
 import {
   useAdminTopicsQuery,

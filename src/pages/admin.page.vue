@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from 'element-plus'
 import { useRoute } from 'vue-router'
 import {
   User, ChatDotRound, Folder, PriceTag, Back,
@@ -103,7 +102,7 @@ const activeMenu = computed(() => route.path)
 
           <!-- Sidebar Footer -->
           <div class="border-t px-4 py-3 [border-color:var(--forum-border)]">
-            <div class="mb-2 flex flex-col gap-1.5">
+            <el-space direction="vertical" :size="6" fill alignment="center" class="mb-2 w-full">
               <el-button
                 size="small"
                 :type="toastEnabled ? 'warning' : 'info'"
@@ -121,7 +120,7 @@ const activeMenu = computed(() => route.path)
               >
                 导出校验{{ failureCount ? ` (${failureCount})` : '' }}
               </el-button>
-            </div>
+            </el-space>
             <RouterLink
               :to="{ path: '/' }"
               class="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[0.84rem] no-underline transition-colors [color:var(--forum-text-soft)] hover:[background:var(--forum-surface-muted)] hover:[color:var(--forum-text)]"

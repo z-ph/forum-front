@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-import { useFormItem } from 'element-plus'
 import { MdEditor, type ToolbarNames, type UploadImgEvent } from 'md-editor-v3'
 
 const props = withDefaults(defineProps<{
