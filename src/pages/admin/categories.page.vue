@@ -22,6 +22,33 @@ const deleteMutation = useDeleteCategoryMutation()
 
 const flatList = computed(() => flattenCategoryTree(data.value ?? []))
 
+/** id → 分类名称 映射，用于在表格中显示父级分类名 */
+const categoryNameMap = computed(() => {
+  const map = new Map<number, string>()
+  for (const cat of flatList.value) {
+    map.set(cat.id, cat.name)
+  }
+  return map
+})
+
+/** 表单可选父级分类（编辑时排除自身及子孙，避免循环引用） */
+const parentOptions = computed(() => {
+  if (!editingRow.value) { return flatList.value }
+  // 收集当前分类及其所有子孙 ID
+  const excludeIds = new Set<number>()
+  excludeIds.add(editingRow.value.id)
+  function collectDescendants(parentId: number) {
+    for (const cat of flatList.value) {
+      if (cat.parentId === parentId && !excludeIds.has(cat.id)) {
+        excludeIds.add(cat.id)
+        collectDescendants(cat.id)
+      }
+    }
+  }
+  collectDescendants(editingRow.value.id)
+  return flatList.value.filter((cat) => !excludeIds.has(cat.id))
+})
+
 const dialogTitle = computed(() =>
   editingRow.value ? '编辑分类' : '新增分类',
 )
@@ -139,9 +166,13 @@ function handleDelete(row: CategoryVO) {
         stripe
         style="width: 100%"
       >
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="name" label="名称" min-width="140" />
-        <el-table-column prop="parentId" label="父级ID" width="100" />
+        <el-table-column label="父级分类" width="120">
+          <template #default="{ row }: { row: CategoryVO }">
+            {{ row.parentId === 0 ? '顶级分类' : (categoryNameMap.get(row.parentId) || '未知') }}
+          </template>
+        </el-table-column>
         <el-table-column
           prop="description"
           label="描述"
@@ -195,12 +226,23 @@ function handleDelete(row: CategoryVO) {
             aria-label="分类名称"
           />
         </el-form-item>
-        <el-form-item label="父级ID">
-          <el-input-number
+        <el-form-item label="父级分类">
+          <el-select
             v-model="form.parentId"
-            :min="0"
-            aria-label="父级ID"
-          />
+            filterable
+            clearable
+            placeholder="留空表示顶级分类"
+            style="width: 100%"
+            aria-label="父级分类"
+          >
+            <el-option label="顶级分类（无）" :value="0" />
+            <el-option
+              v-for="cat in parentOptions"
+              :key="cat.id"
+              :label="cat.name"
+              :value="cat.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="描述">
           <el-input

@@ -140,7 +140,7 @@ const pagination = computed(() => ({
         stripe
         style="width: 100%"
       >
-        <el-table-column prop="id" label="ID" width="70" />
+        <el-table-column type="index" label="序号" width="60" />
         <el-table-column
           prop="title"
           label="标题"

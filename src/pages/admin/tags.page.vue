@@ -124,7 +124,7 @@ function handleDelete(row: TagVO) {
         stripe
         style="width: 100%"
       >
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="name" label="名称" min-width="200" />
         <el-table-column label="操作" width="140" fixed="right">
           <template #default="{ row }: { row: TagVO }">

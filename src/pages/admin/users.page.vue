@@ -142,7 +142,7 @@ function formatRole(role: UserVO['role']): string {
         stripe
         style="width: 100%"
       >
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column type="index" label="序号" width="60" />
         <el-table-column label="用户" min-width="160">
           <template #default="{ row }: { row: UserVO }">
             <div class="flex items-center gap-2">
