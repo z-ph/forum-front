@@ -32,14 +32,15 @@ const hasMore = computed(() =>
 
 <template>
   <div v-if="expanded" class="border-l-2 border-[var(--forum-border)] pl-4">
-    <template v-if="flatReplies.length">
+    <el-skeleton v-if="!data" animated :rows="3" />
+    <template v-else-if="flatReplies.length">
       <div
         v-for="child in flatReplies"
         :key="child.id"
         class="mb-3 border-b border-[var(--forum-border)] pb-3 last:mb-0 last:border-b-0"
       >
         <div class="flex items-start gap-2">
-          <el-avatar :size="28" :src="child.author.avatar" />
+          <el-avatar :size="28" :src="child.author.avatar" :alt="child.author.name" />
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <strong class="text-[0.84rem] text-[#172235]">

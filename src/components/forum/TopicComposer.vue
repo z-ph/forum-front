@@ -90,6 +90,7 @@ function handleClose() {
     :model-value="modelValue"
     title="发布新主题"
     width="720px"
+    aria-label="发布新主题"
     class="max-w-[calc(100vw-1.5rem)]"
     destroy-on-close
     @close="handleClose"

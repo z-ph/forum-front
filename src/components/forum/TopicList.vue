@@ -47,6 +47,7 @@ function avatarColor(name: string): string {
         v-for="topic in topics"
         :key="topic.id"
         type="button"
+        :aria-label="`打开话题：${topic.title}`"
         class="group grid w-full items-center gap-[14px] border-0 border-b bg-transparent px-[18px] py-2.5 text-left transition-colors duration-150 [border-color:var(--forum-border)] [grid-template-columns:44px_minmax(0,1fr)_140px_64px_64px_110px] hover:[background:color-mix(in_srgb,var(--forum-surface-muted)_72%,white)] active:[background:color-mix(in_srgb,var(--forum-surface-muted)_92%,white)] focus-visible:relative focus-visible:z-[1] focus-visible:[background:color-mix(in_srgb,var(--forum-surface-muted)_72%,white)] max-[900px]:grid-cols-[40px_minmax(0,1fr)_auto_auto] max-[900px]:gap-x-[10px] max-[900px]:gap-y-2 max-[900px]:px-3"
         @click="emit('open', topic.id)"
       >
