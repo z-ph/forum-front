@@ -276,6 +276,7 @@ export async function register(payload: RegisterPayload): Promise<ForumUser> {
 
 export async function logout() {
   await wait(120)
+  localStorage.removeItem('token')
   currentUser = null
 }
 

@@ -1,4 +1,4 @@
-import apiClient from '@/core/apiClient'
+import apiClient, { isApiSuccess } from '@/core/apiClient'
 import type { ApiResponse, Page } from '@/types/api'
 
 export type UserRole = 'USER' | 'ADMIN'
@@ -57,7 +57,7 @@ export async function register(payload: RegisterRequest): Promise<ApiResponse<st
 export async function login(payload: LoginRequest): Promise<ApiResponse<string>> {
   const response = await apiClient.post<ApiResponse<string>>('/user/login', payload)
   const body = response.data
-  if (body.code === 200) {
+  if (isApiSuccess(body)) {
     localStorage.setItem('token', body.data)
   }
   return body
