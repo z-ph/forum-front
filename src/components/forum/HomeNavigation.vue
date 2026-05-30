@@ -24,8 +24,39 @@ const feedItems = [
   { key: 'latest' as ForumTopicFeed, label: '最新', name: '/(forum)/latest' as const },
 ]
 
-function updateCategory(value: string) {
-  emit('update:activeCategoryId', value)
+// Resolve which parent is currently active (or parent of the active child)
+const selectedParentId = computed(() => {
+  const id = props.activeCategoryId
+  if (id === 'all') { return 'all' }
+  const parent = props.categories.find(c => c.id === id)
+  if (parent) { return id }
+  // activeCategoryId is a child — find its parent
+  return props.categories.find(c => c.children?.some(ch => ch.id === id))?.id ?? 'all'
+})
+
+const selectedParent = computed(() =>
+  props.categories.find(c => c.id === selectedParentId.value),
+)
+
+const children = computed(() => selectedParent.value?.children ?? [])
+
+const selectedChildId = computed(() => {
+  const id = props.activeCategoryId
+  if (id === 'all' || id === selectedParentId.value) { return 'all' }
+  return children.value.some(c => c.id === id) ? id : 'all'
+})
+
+function onParentChange(parentId: string) {
+  // Switching parent resets child selection — filter by parent category
+  emit('update:activeCategoryId', parentId)
+}
+
+function onChildChange(childId: string) {
+  if (childId === 'all') {
+    emit('update:activeCategoryId', selectedParentId.value)
+  } else {
+    emit('update:activeCategoryId', childId)
+  }
 }
 
 function updateTag(value: string) {
@@ -42,16 +73,16 @@ const sharedQuery = computed(() => ({
   <section
     class="flex items-center justify-between gap-3 border-b px-[18px] py-3 md:px-[22px] md:py-[14px] [background:color-mix(in_srgb,var(--forum-surface-muted)_74%,white)] [border-color:var(--forum-border)]">
     <div class="flex items-center gap-2.5">
-      <el-select :model-value="props.activeCategoryId" aria-label="筛选条件：类别" class="home-navigation-select min-w-[148px]"
-        placeholder="类别" @update:model-value="updateCategory">
+      <el-select :model-value="selectedParentId" aria-label="筛选条件：父类别" class="home-navigation-select min-w-[148px]"
+        placeholder="类别" @update:model-value="onParentChange">
         <el-option label="全部类别" value="all" />
-        <template v-for="category in props.categories" :key="category.id">
-          <el-option-group v-if="category.children?.length" :label="category.name">
-            <el-option :label="category.name" :value="category.id" />
-            <el-option v-for="child in category.children" :key="child.id" :label="child.name" :value="child.id" />
-          </el-option-group>
-          <el-option v-else :label="category.name" :value="category.id" />
-        </template>
+        <el-option v-for="category in props.categories" :key="category.id" :label="category.name" :value="category.id" />
+      </el-select>
+
+      <el-select v-if="children.length" :model-value="selectedChildId" aria-label="筛选条件：子类别"
+        class="home-navigation-select min-w-[148px]" placeholder="子类别" @update:model-value="onChildChange">
+        <el-option label="全部子类别" value="all" />
+        <el-option v-for="child in children" :key="child.id" :label="child.name" :value="child.id" />
       </el-select>
 
       <el-select :model-value="props.activeTag" aria-label="筛选条件：标签" class="home-navigation-select min-w-[148px]"
@@ -71,8 +102,6 @@ const sharedQuery = computed(() => ({
         </el-radio-group>
       </nav>
     </div>
-
-
 
     <el-button class="min-h-11 px-4" type="primary" @click="router.push({ name: '/topics.new' })">
       <el-icon class="mr-1.5">
