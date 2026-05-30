@@ -10,9 +10,6 @@ const props = defineProps<{
   activeCategoryId: string
   activeTag: string
   activeFeed: ForumTopicFeed
-  summaryTitle: string
-  summaryHint: string
-  resultCount: number
 }>()
 
 const emit = defineEmits<{

@@ -2,11 +2,11 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ForumHeader from '../components/forum/ForumHeader.vue'
-import CategorySidebar from '../components/forum/CategorySidebar.vue'
 import HomeNavigation from '../components/forum/HomeNavigation.vue'
 import TopicComposer from '../components/forum/TopicComposer.vue'
 import { useForumHomeState } from '../hooks/useForumHomeState'
 import { useForumFeed } from '../hooks/useForumFeed'
+import type { ForumTopicFeed } from '../types/forum'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,23 +14,20 @@ const router = useRouter()
 function handleAdmin() {
   void router.push({ path: '/admin' })
 }
-const feed = computed<'categories' | 'latest'>(() => (
-  route.name === '/(forum)/categories' ? 'categories' : 'latest'
-))
+
+const activeFeed = computed(() => (route.meta.activeFeed as ForumTopicFeed) ?? 'latest')
 
 const {
   data,
-  me, categories, availableTags, totalTopics, isAdmin,
-  isCreatingTopic, composeOpen, showCategorySidebar,
-  activeFeed,
+  me, categories, availableTags, isAdmin,
+  isCreatingTopic, composeOpen,
   handleCreateTopic, handleLogout, handleAuth, handleCompose,
-} = useForumHomeState(feed)
+} = useForumHomeState()
 
 const {
-  topics, summaryTitle, summaryHint,
   activeCategoryId, activeTag,
   updateCategory, updateTag,
-} = useForumFeed(feed, data)
+} = useForumFeed(data)
 </script>
 
 <template>
@@ -52,35 +49,11 @@ const {
           :active-category-id="activeCategoryId"
           :active-tag="activeTag"
           :active-feed="activeFeed"
-          :summary-title="summaryTitle"
-          :summary-hint="summaryHint"
-          :result-count="topics.length"
           @update:active-category-id="updateCategory"
           @update:active-tag="updateTag"
         />
 
-        <div
-          class="grid items-start"
-          :class="showCategorySidebar
-            ? '[grid-template-columns:296px_minmax(0,1fr)] max-[1080px]:grid-cols-1'
-            : 'grid-cols-1'"
-        >
-          <section
-            v-if="showCategorySidebar"
-            class="min-w-0 border-r [border-color:var(--forum-border)] max-[1080px]:border-r-0 max-[1080px]:border-b"
-          >
-            <CategorySidebar
-              :categories="categories"
-              :active-category-id="activeCategoryId"
-              :total-topics="totalTopics"
-              @select="updateCategory"
-            />
-          </section>
-
-          <section class="min-w-0">
-            <RouterView />
-          </section>
-        </div>
+        <RouterView />
       </main>
     </div>
 

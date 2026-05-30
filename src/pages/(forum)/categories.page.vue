@@ -1,19 +1,50 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useForumFeed } from '../../hooks/useForumFeed'
-import ForumFeedPage from '../../components/forum/ForumFeedPage.vue'
+import { useForumFeed, sortByCategory } from '../../hooks/useForumFeed'
+import CategorySidebar from '../../components/forum/CategorySidebar.vue'
+import TopicList from '../../components/forum/TopicList.vue'
 
-const feed = computed(() => 'categories' as const)
-const { topics, isLoading, isError, emptyDescription, openTopic, refetch } = useForumFeed(feed)
+definePage({
+  meta: { activeFeed: 'categories' },
+})
+
+const {
+  topics: filtered, isLoading, isError, openTopic, refetch,
+  categories, totalTopics, activeCategoryId, updateCategory,
+} = useForumFeed()
+
+const topics = computed(() => sortByCategory(filtered.value))
 </script>
 
 <template>
-  <ForumFeedPage
-    :topics="topics"
-    :empty-description="emptyDescription"
-    :is-loading="isLoading"
-    :is-error="isError"
-    @open-topic="openTopic"
-    @retry="refetch"
-  />
+  <div class="grid items-start [grid-template-columns:296px_minmax(0,1fr)] max-[1080px]:grid-cols-1">
+    <section class="min-w-0 border-r [border-color:var(--forum-border)] max-[1080px]:border-r-0 max-[1080px]:border-b">
+      <CategorySidebar
+        :categories="categories"
+        :active-category-id="activeCategoryId"
+        :total-topics="totalTopics"
+        @select="updateCategory"
+      />
+    </section>
+
+    <section class="min-w-0">
+      <el-skeleton v-if="isLoading" animated :rows="9" />
+      <el-result
+        v-else-if="isError"
+        icon="warning"
+        title="加载失败"
+        sub-title="数据加载失败，请稍后重试。"
+      >
+        <template #extra>
+          <el-button type="primary" @click="refetch">重试</el-button>
+        </template>
+      </el-result>
+      <TopicList
+        v-else
+        :topics="topics"
+        empty-description="当前还没有可按类别展示的话题。"
+        @open="openTopic"
+      />
+    </section>
+  </div>
 </template>

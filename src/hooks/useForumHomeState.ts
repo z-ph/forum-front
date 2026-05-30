@@ -1,4 +1,4 @@
-import { computed, ref, type ComputedRef } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   useCreateTopicMutation,
@@ -7,10 +7,9 @@ import {
 } from './useForum'
 import type {
   CreateTopicPayload,
-  ForumTopicFeed,
 } from '../types/forum'
 
-export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
+export function useForumHomeState() {
   const router = useRouter()
 
   const composeOpen = ref(false)
@@ -25,7 +24,6 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
   const totalTopics = computed(() => data.value?.totalTopics ?? 0)
   const isAdmin = computed(() => me.value?.role === 'admin')
   const isCreatingTopic = computed(() => createTopicMutation.isPending.value)
-  const showCategorySidebar = computed(() => feed.value === 'categories')
 
   async function handleCreateTopic(payload: CreateTopicPayload) {
     try {
@@ -63,7 +61,6 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
     void router.push({ name: '/auth' })
   }
 
-
   function handleCompose() {
     if (!me.value) {
       void router.push({ name: '/auth' })
@@ -75,20 +72,10 @@ export function useForumHomeState(feed: ComputedRef<ForumTopicFeed>) {
 
   return {
     data,
-    me,
-    categories,
-    availableTags,
-    totalTopics,
-    isAdmin,
+    me, categories, availableTags, totalTopics, isAdmin,
     isCreatingTopic,
-    isLoading,
-    isError,
+    isLoading, isError,
     composeOpen,
-    activeFeed: feed,
-    showCategorySidebar,
-    handleCreateTopic,
-    handleLogout,
-    handleAuth,
-    handleCompose,
+    handleCreateTopic, handleLogout, handleAuth, handleCompose,
   }
 }
