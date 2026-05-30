@@ -8,11 +8,12 @@ import {
   useDeleteCategoryMutation,
   flattenCategoryTree,
 } from '../../hooks/useAdmin'
-import type { CategoryVO } from '../../services/categoryApi'
+import type { CategoryTreeVO } from '../../services/categoryApi'
 
 const dialogVisible = ref(false)
-const editingRow = ref<CategoryVO | null>(null)
+const editingRow = ref<CategoryTreeVO | null>(null)
 const form = ref({ name: '', parentId: 0, description: '' })
+const newChildName = ref('')
 
 const { data, isLoading, isError, refetch } = useAdminCategoriesQuery()
 const createMutation = useCreateCategoryMutation()
@@ -21,19 +22,29 @@ const deleteMutation = useDeleteCategoryMutation()
 
 const flatList = computed(() => flattenCategoryTree(data.value ?? []))
 
-/** id → 分类名称 映射，用于在表格中显示父级分类名 */
-const categoryNameMap = computed(() => {
-  const map = new Map<number, string>()
-  for (const cat of flatList.value) {
-    map.set(cat.id, cat.name)
+const dialogTitle = computed(() =>
+  editingRow.value ? '编辑分类' : '新增分类',
+)
+
+/** 当前编辑分类的子分类 */
+const childrenOfEditing = computed(() => {
+  if (!editingRow.value || !data.value) { return [] }
+  const find = (nodes: CategoryTreeVO[]): CategoryTreeVO[] => {
+    for (const node of nodes) {
+      if (node.id === editingRow.value?.id) { return node.children || [] }
+      if (node.children) {
+        const found = find(node.children)
+        if (found.length) { return found }
+      }
+    }
+    return []
   }
-  return map
+  return find(data.value)
 })
 
-/** 表单可选父级分类（编辑时排除自身及子孙，避免循环引用） */
+/** 表单可选父级分类（编辑时排除自身及子孙） */
 const parentOptions = computed(() => {
   if (!editingRow.value) { return flatList.value }
-  // 收集当前分类及其所有子孙 ID
   const excludeIds = new Set<number>()
   excludeIds.add(editingRow.value.id)
   function collectDescendants(parentId: number) {
@@ -48,23 +59,27 @@ const parentOptions = computed(() => {
   return flatList.value.filter((cat) => !excludeIds.has(cat.id))
 })
 
-const dialogTitle = computed(() =>
-  editingRow.value ? '编辑分类' : '新增分类',
-)
-
 function openCreateDialog() {
   editingRow.value = null
   form.value = { name: '', parentId: 0, description: '' }
+  newChildName.value = ''
   dialogVisible.value = true
 }
 
-function openEditDialog(row: CategoryVO) {
+function openAddChildDialog(parentRow: CategoryTreeVO) {
+  editingRow.value = null
+  form.value = { name: '', parentId: parentRow.id, description: '' }
+  dialogVisible.value = true
+}
+
+function openEditDialog(row: CategoryTreeVO) {
   editingRow.value = row
   form.value = {
     name: row.name,
     parentId: row.parentId,
     description: row.description || '',
   }
+  newChildName.value = ''
   dialogVisible.value = true
 }
 
@@ -75,17 +90,17 @@ function handleSubmit() {
     return
   }
 
-  const data: { parentId: number; name: string; description?: string } = {
+  const payload: { parentId: number; name: string; description?: string } = {
     name,
     parentId: form.value.parentId,
   }
   if (form.value.description) {
-    data.description = form.value.description
+    payload.description = form.value.description
   }
 
   if (editingRow.value) {
     updateMutation.mutate(
-      { id: editingRow.value.id, data },
+      { id: editingRow.value.id, data: payload },
       {
         onSuccess: () => {
           ElMessage.success('编辑成功')
@@ -97,7 +112,7 @@ function handleSubmit() {
       },
     )
   } else {
-    createMutation.mutate(data, {
+    createMutation.mutate(payload, {
       onSuccess: () => {
         ElMessage.success('创建成功')
         dialogVisible.value = false
@@ -109,7 +124,24 @@ function handleSubmit() {
   }
 }
 
-function handleDelete(row: CategoryVO) {
+function handleAddChild() {
+  const name = newChildName.value.trim()
+  if (!name || !editingRow.value) { return }
+  createMutation.mutate(
+    { name, parentId: editingRow.value.id },
+    {
+      onSuccess: () => {
+        ElMessage.success('子分类已添加')
+        newChildName.value = ''
+      },
+      onError: (error) => {
+        ElMessage.error((error as Error)?.message || '操作失败')
+      },
+    },
+  )
+}
+
+function handleDelete(row: CategoryTreeVO) {
   ElMessageBox.confirm(
     `确定删除分类「${row.name}」吗？`,
     '提示',
@@ -159,27 +191,32 @@ function handleDelete(row: CategoryVO) {
       </template>
     </el-result>
 
-    <template v-else-if="flatList.length > 0">
+    <template v-else-if="(data ?? []).length > 0">
       <el-table
-        :data="flatList"
+        :data="data ?? []"
+        row-key="id"
+        :tree-props="{ children: 'children' }"
         stripe
         style="width: 100%"
       >
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="name" label="名称" min-width="140" />
-        <el-table-column label="父级分类" width="120">
-          <template #default="{ row }: { row: CategoryVO }">
-            {{ row.parentId === 0 ? '顶级分类' : (categoryNameMap.get(row.parentId) || '未知') }}
-          </template>
-        </el-table-column>
         <el-table-column
           prop="description"
           label="描述"
           min-width="200"
           show-overflow-tooltip
         />
-        <el-table-column label="操作" width="140" fixed="right">
-          <template #default="{ row }: { row: CategoryVO }">
+        <el-table-column label="操作" width="220" fixed="right">
+          <template #default="{ row }: { row: CategoryTreeVO }">
+            <el-button
+              text
+              type="success"
+              size="small"
+              @click="openAddChildDialog(row)"
+            >
+              添加子分类
+            </el-button>
             <el-button
               text
               type="primary"
@@ -210,10 +247,11 @@ function handleDelete(row: CategoryVO) {
       description="暂无分类"
     />
 
+    <!-- 新增 / 编辑弹窗 -->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="480px"
+      width="500px"
       class="max-w-[calc(100vw-1.5rem)]"
       :close-on-click-modal="false"
       :aria-label="dialogTitle"
@@ -256,9 +294,65 @@ function handleDelete(row: CategoryVO) {
           />
         </el-form-item>
       </el-form>
+
+      <!-- 编辑模式下：子分类管理 -->
+      <div v-if="editingRow" class="mt-4 border-t pt-4">
+        <div class="mb-2 text-sm font-medium text-gray-700">子分类</div>
+
+        <div v-if="childrenOfEditing.length > 0" class="mb-3 space-y-1">
+          <div
+            v-for="child in childrenOfEditing"
+            :key="child.id"
+            class="flex items-center justify-between rounded bg-gray-50 px-3 py-2"
+          >
+            <span class="truncate">{{ child.name }}</span>
+            <div class="flex shrink-0 gap-1">
+              <el-button
+                text
+                type="primary"
+                size="small"
+                @click="openEditDialog(child)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                text
+                type="danger"
+                size="small"
+                @click="handleDelete(child)"
+              >
+                删除
+              </el-button>
+            </div>
+          </div>
+        </div>
+        <p v-else class="mb-3 text-sm text-gray-400">暂无子分类</p>
+
+        <div class="flex gap-2">
+          <el-input
+            v-model="newChildName"
+            placeholder="输入子分类名称，回车添加"
+            size="small"
+            @keyup.enter="handleAddChild"
+          />
+          <el-button
+            type="primary"
+            size="small"
+            :loading="createMutation.isPending.value"
+            @click="handleAddChild"
+          >
+            添加
+          </el-button>
+        </div>
+      </div>
+
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="createMutation.isPending.value || updateMutation.isPending.value" @click="handleSubmit">
+        <el-button
+          type="primary"
+          :loading="createMutation.isPending.value || updateMutation.isPending.value"
+          @click="handleSubmit"
+        >
           确定
         </el-button>
       </template>
