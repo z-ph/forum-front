@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePage({
-  redirect: { name: '/(forum)/categories' },
+  redirect: { name: '/admin/users' },
 })
 </script>
 

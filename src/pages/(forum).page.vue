@@ -28,42 +28,27 @@ const {
   activeCategoryId, activeTag,
   updateCategory, updateTag,
 } = useForumFeed(data)
+definePage({
+  redirect: { name: '/(forum)/categories' }
+})
 </script>
 
 <template>
   <div class="min-h-screen bg-transparent pb-6">
     <div class="mx-auto w-full border border-t-0 [background:var(--forum-surface)] [border-color:var(--forum-border)]">
-      <ForumHeader
-        :me="me"
-        :is-admin="isAdmin"
-        @auth="handleAuth"
-        @compose="handleCompose"
-        @logout="handleLogout"
-        @admin="handleAdmin"
-      />
+      <ForumHeader :me="me" :is-admin="isAdmin" @auth="handleAuth" @compose="handleCompose" @logout="handleLogout"
+        @admin="handleAdmin" />
 
       <main class="flex flex-col">
-        <HomeNavigation
-          :categories="categories"
-          :tags="availableTags"
-          :active-category-id="activeCategoryId"
-          :active-tag="activeTag"
-          :active-feed="activeFeed"
-          @update:active-category-id="updateCategory"
-          @update:active-tag="updateTag"
-        />
+        <HomeNavigation :categories="categories" :tags="availableTags" :active-category-id="activeCategoryId"
+          :active-tag="activeTag" :active-feed="activeFeed" @update:active-category-id="updateCategory"
+          @update:active-tag="updateTag" />
 
         <RouterView />
       </main>
     </div>
 
-    <TopicComposer
-      v-model="composeOpen"
-      :is-admin="isAdmin"
-      :categories="categories"
-      :available-tags="availableTags"
-      :loading="isCreatingTopic"
-      @submit="handleCreateTopic"
-    />
+    <TopicComposer v-model="composeOpen" :is-admin="isAdmin" :categories="categories" :available-tags="availableTags"
+      :loading="isCreatingTopic" @submit="handleCreateTopic" />
   </div>
 </template>
