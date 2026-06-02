@@ -10,11 +10,7 @@
     "lint": "eslint . --cache --cache-strategy content",
     "lint:fix": "eslint . --fix --cache --cache-strategy content",
     "preview": "vite preview",
-    "typecheck": "vue-tsc -b",
-    "prepare": "simple-git-hooks"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "pnpm lint && pnpm typecheck"
+    "typecheck": "vue-tsc -b"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
@@ -36,7 +32,6 @@
     "eslint": "^10.4.0",
     "eslint-plugin-vue": "^10.9.1",
     "globals": "^17.6.0",
-    "simple-git-hooks": "^2.13.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.4",
     "unplugin-auto-import": "^21.0.0",

@@ -20,6 +20,7 @@ const sharedRules = {
   '@typescript-eslint/array-type': 'off',
 }
 
+
 const config = tseslint.config(
   {
     ignores: [
