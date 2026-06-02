@@ -190,8 +190,13 @@ const pagination = computed(() => ({
         Pagination is hidden when keyword is active to avoid showing a misleading
         total count that reflects unfiltered backend data.
       -->
-      <div v-if="hasKeyword" class="mt-2 text-sm text-gray-400 text-center">
-        当前关键词筛选仅作用于本页 ({{ filteredRecords.length }} 条结果)
+      <div v-if="hasKeyword" class="mt-3 rounded-md border border-[var(--forum-border)] bg-[var(--forum-surface-muted)] px-4 py-3 text-sm text-[color:var(--forum-text-soft)]">
+        <p class="m-0">
+          关键词"<strong class="text-[color:var(--forum-text)]">{{ filterParams.keyword }}</strong>"仅在当前页 ({{ data?.records?.length ?? 0 }} 条) 中匹配到 <strong class="text-[color:var(--forum-text)]">{{ filteredRecords.length }}</strong> 条结果。
+        </p>
+        <p class="m-0 mt-1 text-xs">
+          清空搜索框可恢复分页浏览全部数据。
+        </p>
       </div>
 
       <div v-else class="mt-4 flex justify-center">

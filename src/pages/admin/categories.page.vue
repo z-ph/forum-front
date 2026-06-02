@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import type { FormInstance, FormRules } from 'element-plus'
 import AdminPageShell from '../../components/admin/AdminPageShell.vue'
 import {
   useAdminCategoriesQuery,
@@ -14,6 +15,15 @@ const dialogVisible = ref(false)
 const editingRow = ref<CategoryTreeVO | null>(null)
 const form = ref({ name: '', parentId: 0, description: '' })
 const newChildName = ref('')
+const newChildDescription = ref('')
+const formRef = ref<FormInstance>()
+
+const rules: FormRules = {
+  name: [{ required: true, message: '请输入分类名称', trigger: 'blur' }],
+}
+
+/** 是否正在添加子分类（非编辑模式下 parentId 不为 0） */
+const isAddingChild = computed(() => editingRow.value === null && form.value.parentId !== 0)
 
 const { data, isLoading, isError, refetch } = useAdminCategoriesQuery()
 const createMutation = useCreateCategoryMutation()
@@ -22,9 +32,11 @@ const deleteMutation = useDeleteCategoryMutation()
 
 const flatList = computed(() => flattenCategoryTree(data.value ?? []))
 
-const dialogTitle = computed(() =>
-  editingRow.value ? '编辑分类' : '新增分类',
-)
+const dialogTitle = computed(() => {
+  if (editingRow.value) {return '编辑分类'}
+  if (isAddingChild.value) {return '添加子分类'}
+  return '新增顶级分类'
+})
 
 /** 当前编辑分类的子分类 */
 const childrenOfEditing = computed(() => {
@@ -63,12 +75,15 @@ function openCreateDialog() {
   editingRow.value = null
   form.value = { name: '', parentId: 0, description: '' }
   newChildName.value = ''
+  newChildDescription.value = ''
   dialogVisible.value = true
 }
 
 function openAddChildDialog(parentRow: CategoryTreeVO) {
   editingRow.value = null
   form.value = { name: '', parentId: parentRow.id, description: '' }
+  newChildName.value = ''
+  newChildDescription.value = ''
   dialogVisible.value = true
 }
 
@@ -80,22 +95,20 @@ function openEditDialog(row: CategoryTreeVO) {
     description: row.description || '',
   }
   newChildName.value = ''
+  newChildDescription.value = ''
   dialogVisible.value = true
 }
 
-function handleSubmit() {
-  const name = form.value.name.trim()
-  if (!name) {
-    ElMessage.warning('请输入分类名称')
-    return
-  }
+async function handleSubmit() {
+  const valid = await formRef.value?.validate().catch(() => false)
+  if (!valid) {return}
 
   const payload: { parentId: number; name: string; description?: string } = {
-    name,
+    name: form.value.name.trim(),
     parentId: form.value.parentId,
   }
-  if (form.value.description) {
-    payload.description = form.value.description
+  if (form.value.description.trim()) {
+    payload.description = form.value.description.trim()
   }
 
   if (editingRow.value) {
@@ -114,7 +127,7 @@ function handleSubmit() {
   } else {
     createMutation.mutate(payload, {
       onSuccess: () => {
-        ElMessage.success('创建成功')
+        ElMessage.success(isAddingChild.value ? '子分类已添加' : '创建成功')
         dialogVisible.value = false
       },
       onError: (error) => {
@@ -126,19 +139,25 @@ function handleSubmit() {
 
 function handleAddChild() {
   const name = newChildName.value.trim()
-  if (!name || !editingRow.value) { return }
-  createMutation.mutate(
-    { name, parentId: editingRow.value.id },
-    {
-      onSuccess: () => {
-        ElMessage.success('子分类已添加')
-        newChildName.value = ''
-      },
-      onError: (error) => {
-        ElMessage.error((error as Error)?.message || '操作失败')
-      },
+  if (!name || !editingRow.value) {return}
+  const payload: { parentId: number; name: string; description?: string } = {
+    name,
+    parentId: editingRow.value.id,
+  }
+  const desc = newChildDescription.value.trim()
+  if (desc) {
+    payload.description = desc
+  }
+  createMutation.mutate(payload, {
+    onSuccess: () => {
+      ElMessage.success('子分类已添加')
+      newChildName.value = ''
+      newChildDescription.value = ''
     },
-  )
+    onError: (error) => {
+      ElMessage.error((error as Error)?.message || '操作失败')
+    },
+  })
 }
 
 function handleDelete(row: CategoryTreeVO) {
@@ -174,7 +193,7 @@ function handleDelete(row: CategoryTreeVO) {
   >
     <template #actions>
       <el-button type="primary" @click="openCreateDialog">
-        新增分类
+        新增顶级分类
       </el-button>
     </template>
 
@@ -256,15 +275,15 @@ function handleDelete(row: CategoryTreeVO) {
       :close-on-click-modal="false"
       :aria-label="dialogTitle"
     >
-      <el-form label-position="top">
-        <el-form-item label="分类名称" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
+        <el-form-item label="分类名称" prop="name">
           <el-input
             v-model="form.name"
             placeholder="请输入分类名称"
             aria-label="分类名称"
           />
         </el-form-item>
-        <el-form-item label="父级分类">
+        <el-form-item v-if="!isAddingChild" label="父级分类">
           <el-select
             v-model="form.parentId"
             filterable
@@ -328,21 +347,31 @@ function handleDelete(row: CategoryTreeVO) {
         </div>
         <p v-else class="mb-3 text-sm text-gray-400">暂无子分类</p>
 
-        <div class="flex gap-2">
+        <div class="flex flex-col gap-2">
+          <div class="flex gap-2">
+            <el-input
+              v-model="newChildName"
+              placeholder="子分类名称"
+              size="small"
+              @keyup.enter="handleAddChild"
+            />
+            <el-button
+              type="primary"
+              size="small"
+              :loading="createMutation.isPending.value"
+              @click="handleAddChild"
+            >
+              添加
+            </el-button>
+          </div>
           <el-input
-            v-model="newChildName"
-            placeholder="输入子分类名称，回车添加"
+            v-model="newChildDescription"
+            placeholder="子分类描述（可选）"
             size="small"
+            :maxlength="200"
+            show-word-limit
             @keyup.enter="handleAddChild"
           />
-          <el-button
-            type="primary"
-            size="small"
-            :loading="createMutation.isPending.value"
-            @click="handleAddChild"
-          >
-            添加
-          </el-button>
         </div>
       </div>
 

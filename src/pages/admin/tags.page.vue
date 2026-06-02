@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import type { FormInstance, FormRules } from 'element-plus'
 import AdminPageShell from '../../components/admin/AdminPageShell.vue'
 import {
   useAdminTagsQuery,
@@ -10,61 +11,67 @@ import {
 import type { TagVO } from '@/types/api'
 
 const dialogVisible = ref(false)
-const editingRow = ref<TagVO | null>(null)
 const form = ref({ name: '' })
+const formRef = ref<FormInstance>()
+
+const rules: FormRules = {
+  name: [{ required: true, message: '请输入标签名称', trigger: 'blur' }],
+}
+
+/** 内联编辑状态 */
+const editingId = ref<number | null>(null)
+const editingName = ref('')
 
 const { data, isLoading, isError, refetch } = useAdminTagsQuery()
 const createMutation = useCreateTagMutation()
 const updateMutation = useUpdateTagMutation()
 const deleteMutation = useDeleteTagMutation()
 
-const dialogTitle = computed(() =>
-  editingRow.value ? '编辑标签' : '新增标签',
-)
-
 function openCreateDialog() {
-  editingRow.value = null
   form.value = { name: '' }
   dialogVisible.value = true
 }
 
-function openEditDialog(row: TagVO) {
-  editingRow.value = row
-  form.value = { name: row.name }
-  dialogVisible.value = true
+function startInlineEdit(row: TagVO) {
+  editingId.value = row.id
+  editingName.value = row.name
 }
 
-function handleSubmit() {
-  const name = form.value.name.trim()
-  if (!name) {
-    ElMessage.warning('请输入标签名称')
-    return
-  }
-
-  if (editingRow.value) {
-    updateMutation.mutate(
-      { id: editingRow.value.id, data: { name } },
-      {
-        onSuccess: () => {
-          ElMessage.success('编辑成功')
-          dialogVisible.value = false
-        },
-        onError: (error) => {
-          ElMessage.error((error as Error)?.message || '操作失败，请重试')
-        },
-      },
-    )
-  } else {
-    createMutation.mutate({ name }, {
+async function saveInlineEdit() {
+  const name = editingName.value.trim()
+  if (!name || editingId.value === null) {return}
+  updateMutation.mutate(
+    { id: editingId.value, data: { name } },
+    {
       onSuccess: () => {
-        ElMessage.success('创建成功')
-        dialogVisible.value = false
+        ElMessage.success('编辑成功')
+        editingId.value = null
       },
       onError: (error) => {
         ElMessage.error((error as Error)?.message || '操作失败，请重试')
       },
-    })
-  }
+    },
+  )
+}
+
+function cancelInlineEdit() {
+  editingId.value = null
+}
+
+async function handleSubmit() {
+  const valid = await formRef.value?.validate().catch(() => false)
+  if (!valid) {return}
+
+  const name = form.value.name.trim()
+  createMutation.mutate({ name }, {
+    onSuccess: () => {
+      ElMessage.success('创建成功')
+      dialogVisible.value = false
+    },
+    onError: (error) => {
+      ElMessage.error((error as Error)?.message || '操作失败，请重试')
+    },
+  })
 }
 
 function handleDelete(row: TagVO) {
@@ -124,29 +131,61 @@ function handleDelete(row: TagVO) {
         style="width: 100%"
       >
         <el-table-column type="index" label="序号" width="60" />
-        <el-table-column prop="name" label="名称" min-width="200" />
-        <el-table-column label="操作" width="140" fixed="right">
+        <el-table-column label="名称" min-width="200">
           <template #default="{ row }: { row: TagVO }">
-            <el-button
-              text
-              type="primary"
+            <el-input
+              v-if="editingId === row.id"
+              v-model="editingName"
               size="small"
-              @click="openEditDialog(row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              text
-              type="danger"
-              size="small"
-              :loading="
-                deleteMutation.isPending.value &&
-                deleteMutation.variables.value === row.id
-              "
-              @click="handleDelete(row)"
-            >
-              删除
-            </el-button>
+              @keyup.enter="saveInlineEdit"
+              @keyup.escape="cancelInlineEdit"
+            />
+            <span v-else>{{ row.name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }: { row: TagVO }">
+            <template v-if="editingId === row.id">
+              <el-button
+                text
+                type="primary"
+                size="small"
+                :loading="updateMutation.isPending.value && updateMutation.variables.value?.id === row.id"
+                @click="saveInlineEdit"
+              >
+                保存
+              </el-button>
+              <el-button
+                text
+                size="small"
+                :disabled="updateMutation.isPending.value"
+                @click="cancelInlineEdit"
+              >
+                取消
+              </el-button>
+            </template>
+            <template v-else>
+              <el-button
+                text
+                type="primary"
+                size="small"
+                @click="startInlineEdit(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                text
+                type="danger"
+                size="small"
+                :loading="
+                  deleteMutation.isPending.value &&
+                  deleteMutation.variables.value === row.id
+                "
+                @click="handleDelete(row)"
+              >
+                删除
+              </el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -159,14 +198,14 @@ function handleDelete(row: TagVO) {
 
     <el-dialog
       v-model="dialogVisible"
-      :title="dialogTitle"
+      title="新增标签"
       width="480px"
       class="max-w-[calc(100vw-1.5rem)]"
       :close-on-click-modal="false"
-      :aria-label="dialogTitle"
+      aria-label="新增标签"
     >
-      <el-form label-position="top">
-        <el-form-item label="标签名称" required>
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
+        <el-form-item label="标签名称" prop="name">
           <el-input
             v-model="form.name"
             placeholder="请输入标签名称"
@@ -177,8 +216,8 @@ function handleDelete(row: TagVO) {
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="createMutation.isPending.value || updateMutation.isPending.value" @click="handleSubmit">
-          确定
+        <el-button type="primary" :loading="createMutation.isPending.value" @click="handleSubmit">
+          创建
         </el-button>
       </template>
     </el-dialog>
