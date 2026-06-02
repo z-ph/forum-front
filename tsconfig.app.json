@@ -23,5 +23,5 @@
   // 是为了在提醒开发者
   // 如果要得到路由类型定义以实现类型安全，需要将自动生成的 typed-router.d.ts 添加到include中(如果不在src中的话)
   // 并且位置和文件名都是可以自定义的，在vite.config.ts中配置dts选项即可
-  "include": ["src/typed-router.d.ts","src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "include": ["src/typed-router.d.ts","src/auto-imports.d.ts","src/components.d.ts","src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

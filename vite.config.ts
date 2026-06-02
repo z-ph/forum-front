@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
       AutoImport({
         resolvers: [ElementPlusResolver()],
         imports: [{
-          'element-plus': ['useFormItem'],
+          'element-plus': ['useFormItem', 'ElMessage', 'ElMessageBox'],
         }],
         dts: 'src/auto-imports.d.ts',
       }),
