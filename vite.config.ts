@@ -12,9 +12,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const apiProxyPrefix = '/api'
   const env = loadEnv(mode, process.cwd())
-
+  const apiProxyPrefix = env.VITE_PROXY_PREFIX
+  if (!apiProxyPrefix && mode === 'development') {
+    throw new Error('VITE_PROXY_PREFIX is not defined in the environment variables.')
+  }
   return {
     resolve: {
       alias: {
