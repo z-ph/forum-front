@@ -15,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:activeCategoryId': [value: string]
   'update:activeTag': [value: string]
+  'compose': []
 }>()
 
 const router = useRouter()
@@ -71,26 +72,26 @@ const sharedQuery = computed(() => ({
 
 <template>
   <section
-    class="flex items-center justify-between gap-3 border-b px-[18px] py-3 md:px-[22px] md:py-[14px] [background:color-mix(in_srgb,var(--forum-surface-muted)_74%,white)] [border-color:var(--forum-border)]">
-    <div class="flex items-center gap-2.5">
-      <el-select :model-value="selectedParentId" aria-label="筛选条件：父类别" class="home-navigation-select min-w-[148px]"
+    class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b px-[18px] py-3 md:flex-nowrap md:px-[22px] md:py-[14px] [background:color-mix(in_srgb,var(--forum-surface-muted)_74%,white)] [border-color:var(--forum-border)]">
+    <div class="flex flex-wrap items-center gap-2 md:flex-nowrap md:gap-2.5">
+      <el-select :model-value="selectedParentId" aria-label="筛选条件：父类别" class="home-navigation-select min-w-[120px] max-[640px]:min-w-[100px] md:min-w-[148px]"
         placeholder="类别" @update:model-value="onParentChange">
         <el-option label="全部类别" value="all" />
         <el-option v-for="category in props.categories" :key="category.id" :label="category.name" :value="category.id" />
       </el-select>
 
       <el-select v-if="children.length" :model-value="selectedChildId" aria-label="筛选条件：子类别"
-        class="home-navigation-select min-w-[148px]" placeholder="子类别" @update:model-value="onChildChange">
+        class="home-navigation-select min-w-[120px] max-[640px]:min-w-[100px] md:min-w-[148px]" placeholder="子类别" @update:model-value="onChildChange">
         <el-option label="全部子类别" value="all" />
         <el-option v-for="child in children" :key="child.id" :label="child.name" :value="child.id" />
       </el-select>
 
-      <el-select :model-value="props.activeTag" aria-label="筛选条件：标签" class="home-navigation-select min-w-[148px]"
+      <el-select :model-value="props.activeTag" aria-label="筛选条件：标签" class="home-navigation-select min-w-[120px] max-[640px]:min-w-[100px] md:min-w-[148px]"
         placeholder="标签" @update:model-value="updateTag">
         <el-option label="全部标签" value="all" />
         <el-option v-for="tag in props.tags" :key="tag" :label="`#${tag}`" :value="tag" />
       </el-select>
-      <nav aria-label="首页话题流" class="shrink-0">
+      <nav aria-label="首页话题流" class="shrink-0 max-[640px]:w-full max-[640px]:shrink">
         <el-radio-group :model-value="props.activeFeed" @change="(val: string | number | boolean | undefined) => {
           if (!val) return
           const item = feedItems.find(i => i.key === val)
@@ -103,7 +104,7 @@ const sharedQuery = computed(() => ({
       </nav>
     </div>
 
-    <el-button class="min-h-11 px-4" type="primary" @click="router.push({ name: '/topics.new' })">
+    <el-button class="min-h-11 w-full px-4 sm:w-auto" type="primary" @click="emit('compose')">
       <el-icon class="mr-1.5">
         <EditPen />
       </el-icon>

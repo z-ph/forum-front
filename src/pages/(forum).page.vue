@@ -34,17 +34,19 @@ definePage({
 </script>
 
 <template>
-  <div class="min-h-screen bg-transparent pb-6">
-    <div class="mx-auto w-full border border-t-0 [background:var(--forum-surface)] [border-color:var(--forum-border)]">
+  <div role="document" class="flex h-screen flex-col overflow-hidden bg-transparent">
+    <div class="mx-auto flex w-full flex-1 flex-col overflow-hidden border border-t-0 [background:var(--forum-surface)] [border-color:var(--forum-border)]">
       <ForumHeader :me="me" :is-admin="isAdmin" @auth="handleAuth" @compose="handleCompose" @logout="handleLogout"
         @admin="handleAdmin" />
 
-      <main class="flex flex-col">
+      <main id="main-content" class="flex min-h-0 flex-1 flex-col">
         <HomeNavigation :categories="categories" :tags="availableTags" :active-category-id="activeCategoryId"
           :active-tag="activeTag" :active-feed="activeFeed" @update:active-category-id="updateCategory"
-          @update:active-tag="updateTag" />
+          @update:active-tag="updateTag" @compose="handleCompose" />
 
-        <RouterView />
+        <div class="relative min-h-0 flex-1">
+          <RouterView class="absolute inset-0" @compose="handleCompose" />
+        </div>
       </main>
     </div>
 

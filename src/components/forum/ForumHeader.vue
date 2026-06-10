@@ -59,7 +59,7 @@ function handleAvatarClick() {
       <el-dropdown trigger="click" @command="handleMoreCommand">
         <button
           type="button"
-          class="flex h-9 w-9 items-center justify-center rounded-full border text-[#41546d] transition-colors [background:color-mix(in_srgb,var(--forum-surface-muted)_68%,white)] [border-color:var(--forum-border)] hover:[background:color-mix(in_srgb,var(--forum-surface-muted)_88%,white)]"
+          class="flex h-9 w-9 items-center justify-center rounded-full border text-forum-meta transition-colors [background:color-mix(in_srgb,var(--forum-surface-muted)_68%,white)] [border-color:var(--forum-border)] hover:[background:color-mix(in_srgb,var(--forum-surface-muted)_88%,white)]"
           aria-label="更多操作"
         >
           <el-icon :size="18">

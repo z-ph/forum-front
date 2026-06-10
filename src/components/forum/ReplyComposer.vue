@@ -40,7 +40,7 @@ function handleCancelReply() {
     class="border-t border-forum-border bg-forum-surface px-5 pt-5 md:px-8"
   >
     <div class="mb-3.5">
-      <strong class="block text-[1.04rem] text-[#182437]">参与讨论</strong>
+      <strong class="block text-[1.04rem] text-forum-heading">参与讨论</strong>
       <span class="mt-1.5 block text-forum-text-soft">
         写下你的排查过程、补充说明或最终答案。
       </span>

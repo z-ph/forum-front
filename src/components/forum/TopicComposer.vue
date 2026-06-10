@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
-import type { FormInstance, FormRules } from 'element-plus'
+import { computed, reactive, ref, watch } from 'vue'
+import { ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import type { ForumCategory } from '../../types/forum'
 import { hasRichTextContent } from '../../core/richText'
 import RichTextEditor from './RichTextEditor.vue'
@@ -26,6 +26,14 @@ const form = reactive({
   tags: [] as string[],
 })
 
+const defaultCategoryId = computed(() => props.categories[0]?.id ?? '')
+
+const isDirty = computed(() =>
+  form.title.trim() !== ''
+  || form.content.trim() !== ''
+  || (form.categoryId !== '' && form.categoryId !== defaultCategoryId.value),
+)
+
 function resetForm() {
   form.title = ''
   form.categoryId = props.categories[0]?.id ?? ''
@@ -39,7 +47,7 @@ const rules: FormRules = {
   categoryId: [{ required: true, message: '请选择分类', trigger: 'change' }],
   content: [{
     trigger: ['blur', 'change'],
-    validator: (_rule, value, callback) => {
+    validator: (_rule: unknown, value: unknown, callback: (err?: Error) => void) => {
       if (hasRichTextContent(String(value ?? ''))) {
         callback()
         return
@@ -79,9 +87,40 @@ async function handleSubmit() {
   })
 }
 
-function handleClose() {
-  resetForm()
-  emit('update:modelValue', false)
+function handleBeforeClose(done: () => void) {
+  if (isDirty.value) {
+    void ElMessageBox.confirm('确定放弃正在编辑的内容吗？', '离开编辑', {
+      confirmButtonText: '放弃',
+      cancelButtonText: '继续编辑',
+      type: 'warning',
+    }).then(() => {
+      resetForm()
+      done()
+    }).catch(() => {
+      // User chose to stay
+    })
+  }
+  else {
+    resetForm()
+    done()
+  }
+}
+
+function handleCancel() {
+  if (isDirty.value) {
+    void ElMessageBox.confirm('确定放弃正在编辑的内容吗？', '离开编辑', {
+      confirmButtonText: '放弃',
+      cancelButtonText: '继续编辑',
+      type: 'warning',
+    }).then(() => {
+      resetForm()
+      emit('update:modelValue', false)
+    }).catch(() => { /* user chose to stay */ })
+  }
+  else {
+    resetForm()
+    emit('update:modelValue', false)
+  }
 }
 </script>
 
@@ -93,7 +132,7 @@ function handleClose() {
     aria-label="发布新主题"
     class="max-w-[calc(100vw-1.5rem)]"
     destroy-on-close
-    @close="handleClose"
+    :before-close="handleBeforeClose"
   >
     <el-form
       ref="formRef"
@@ -171,7 +210,7 @@ function handleClose() {
 
     <template #footer>
       <div class="flex justify-end">
-        <el-button @click="handleClose">取消</el-button>
+        <el-button @click="handleCancel">取消</el-button>
         <el-button type="primary" :loading="loading" @click="handleSubmit">发布主题</el-button>
       </div>
     </template>

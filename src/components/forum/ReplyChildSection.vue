@@ -43,20 +43,20 @@ const hasMore = computed(() =>
           <el-avatar :size="28" :src="child.author.avatar" :alt="child.author.name" />
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <strong class="text-[0.84rem] text-[#172235]">
+              <strong class="text-[0.84rem] text-forum-heading">
                 {{ child.author.name }}
               </strong>
               <span
                 v-if="child.replyToUserNickname"
-                class="text-[0.78rem] text-[#75839a]"
+                class="text-[0.78rem] text-forum-meta-light"
               >
                 回复 @{{ child.replyToUserNickname }}
               </span>
             </div>
-            <div class="mt-1 text-[0.9rem] text-[#1b2738]">
+            <div class="mt-1 text-[0.9rem] text-forum-heading-soft">
               <RichTextRenderer :content="child.content" />
             </div>
-            <div class="mt-1 text-[0.78rem] text-[#75839a]">
+            <div class="mt-1 text-[0.78rem] text-forum-meta-light">
               {{ child.createdAt }}
             </div>
           </div>
@@ -76,7 +76,7 @@ const hasMore = computed(() =>
       </div>
     </template>
 
-    <div v-else class="py-2 text-[0.84rem] text-[#75839a]">
+    <div v-else class="py-2 text-[0.84rem] text-forum-meta-light">
       暂无子回复
     </div>
   </div>

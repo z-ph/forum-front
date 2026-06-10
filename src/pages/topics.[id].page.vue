@@ -80,7 +80,7 @@ function setReplyingTo(reply: ForumReply) {
             {{ data.categoryName }}
           </el-tag>
 
-          <h1 class="my-[14px] mb-4 text-[clamp(1.8rem,2.2vw,2.45rem)] leading-[1.25] text-[#162235]">
+          <h1 class="my-[14px] mb-4 text-[clamp(1.8rem,2.2vw,2.45rem)] leading-[1.25] text-forum-heading">
             {{ data.title }}
           </h1>
 
@@ -90,14 +90,14 @@ function setReplyingTo(reply: ForumReply) {
             <div class="flex items-center gap-3">
               <el-avatar :size="42" :src="data.author.avatar" :alt="data.author.name" />
               <div>
-                <strong class="block text-[#192437]">{{ data.author.name }}</strong>
-                <span class="block text-[0.86rem] text-[#72809a]">
+                <strong class="block text-forum-heading">{{ data.author.name }}</strong>
+                <span class="block text-[0.86rem] text-forum-meta">
                   {{ data.author.title }} · 发布于 {{ data.createdAt }}
                 </span>
               </div>
             </div>
 
-            <div class="flex gap-3.5 text-[0.86rem] text-[#72809a]">
+            <div class="flex gap-3.5 text-[0.86rem] text-forum-meta">
               <span class="inline-flex items-center">{{ data.replies.length }} 回复</span>
               <span class="inline-flex items-center">{{ data.views }} 浏览</span>
             </div>
@@ -110,8 +110,8 @@ function setReplyingTo(reply: ForumReply) {
 
         <section class="bg-[var(--forum-surface)]">
           <div class="flex items-center justify-between gap-3 px-5 py-[18px] pb-3 md:px-8">
-            <h2 class="m-0 text-[1.05rem] text-[#182437]">回复</h2>
-            <span class="text-[0.84rem] text-[#74839a]">{{ data.replies.length }} 条讨论</span>
+            <h2 class="m-0 text-[1.05rem] text-forum-heading">回复</h2>
+            <span class="text-[0.84rem] text-forum-meta-light">{{ data.replies.length }} 条讨论</span>
           </div>
 
           <article
@@ -123,11 +123,11 @@ function setReplyingTo(reply: ForumReply) {
               <div class="flex items-start gap-3">
                 <el-avatar :size="38" :src="reply.author.avatar" :alt="reply.author.name" />
                 <div>
-                  <strong class="block text-[#172235]">{{ reply.author.name }}</strong>
-                  <span class="mt-[3px] block text-[0.84rem] text-[#75839a]">
+                  <strong class="block text-forum-heading">{{ reply.author.name }}</strong>
+                  <span class="mt-[3px] block text-[0.84rem] text-forum-meta-light">
                     {{ reply.author.title }}
                   </span>
-                  <em class="mt-[3px] block text-[0.84rem] not-italic text-[#75839a]">
+                  <em class="mt-[3px] block text-[0.84rem] not-italic text-forum-meta-light">
                     #{{ index + 1 }}
                   </em>
                 </div>
@@ -136,7 +136,7 @@ function setReplyingTo(reply: ForumReply) {
               <div>
                 <div class="flex flex-col items-start justify-between gap-3.5 md:flex-row md:items-center">
                   <div>
-                    <strong class="block text-[0.9rem] text-[#1b2738]">{{ reply.createdAt }}</strong>
+                    <strong class="block text-[0.9rem] text-forum-heading-soft">{{ reply.createdAt }}</strong>
                   </div>
                 </div>
 

@@ -12,6 +12,10 @@
   --color-forum-bg: var(--forum-bg);
   --color-forum-surface: var(--forum-surface);
   --color-forum-surface-muted: var(--forum-surface-muted);
+  --color-forum-heading: var(--forum-heading);
+  --color-forum-heading-soft: var(--forum-heading-soft);
+  --color-forum-meta: var(--forum-meta);
+  --color-forum-meta-light: var(--forum-meta-light);
   --shadow-forum-dialog: 0 16px 32px rgba(18, 28, 45, 0.08);
 }
 
@@ -25,6 +29,13 @@
   --forum-bg: #f3f5f7;
   --forum-surface: #ffffff;
   --forum-surface-muted: #f7f9fb;
+  --forum-heading: #162235;
+  --forum-heading-soft: #1a273a;
+  --forum-meta: #72809a;
+  --forum-meta-light: #75839a;
+  --forum-link: var(--forum-primary);
+  --forum-primary-light: color-mix(in srgb, var(--forum-primary) 12%, white);
+  --forum-primary-lighter: color-mix(in srgb, var(--forum-primary) 8%, white);
   color: var(--forum-text);
   background: var(--forum-bg);
   color-scheme: light;
@@ -51,7 +62,8 @@
   html,
   body,
   #app {
-    min-height: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 
   body {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useLoginMutation, useRegisterMutation } from '../hooks/useForum'
@@ -52,6 +52,16 @@ const registerRules: FormRules = {
 
 const currentRules = computed(() => mode.value === 'login' ? loginRules : registerRules)
 
+watch(mode, () => {
+  form.nickname = ''
+  form.email = ''
+  form.username = ''
+  form.password = ''
+  nextTick(() => {
+    formRef.value?.clearValidate()
+  })
+})
+
 const title = computed(() => (mode.value === 'login' ? '登录论坛' : '注册账号'))
 const subtitle = computed(() =>
   mode.value === 'login'
@@ -96,8 +106,8 @@ async function handleSubmit() {
         class="col-span-full flex items-center justify-between gap-4 border-b border-[var(--forum-border)] px-5 py-6 md:px-8"
       >
         <div>
-          <strong class="block text-[1.2rem] text-[#182437]">社区论坛</strong>
-          <span class="mt-1 block text-[0.82rem] text-[#74839a]">账号入口</span>
+          <strong class="block text-[1.2rem] text-forum-heading">社区论坛</strong>
+          <span class="mt-1 block text-[0.82rem] text-forum-meta-light">账号入口</span>
         </div>
         <el-button text @click="router.push({ name: '/(forum)' })">返回论坛</el-button>
       </header>
@@ -105,17 +115,17 @@ async function handleSubmit() {
       <section
         class="border-b border-[var(--forum-border)] bg-[var(--forum-surface-muted)] px-5 py-6 md:border-r md:border-b-0 md:border-[var(--forum-border)] md:px-8 md:py-7"
       >
-        <h1 class="m-0 mb-3.5 text-[clamp(1.9rem,2.8vw,2.8rem)] leading-[1.16] text-[#162134]">
+        <h1 class="m-0 mb-3.5 text-[clamp(1.9rem,2.8vw,2.8rem)] leading-[1.16] text-forum-heading">
           {{ title }}
         </h1>
-        <p v-if="isDev" class="m-0 leading-[1.8] text-[#60718b]">
+        <p v-if="isDev" class="m-0 leading-[1.8] text-forum-meta">
           账号页保持和论坛首页一致的扁平结构，不额外做展示型包装，重点仍然是尽快进入核心讨论流程。
         </p>
 
         <dl class="mt-6 border-y border-[var(--forum-border)]">
           <div class="border-t-0 py-3.5 first:border-t-0 [&+div]:border-t [&+div]:border-[var(--forum-border)]">
-            <dt class="text-[0.78rem] text-[#75839a]">当前模式</dt>
-            <dd class="mt-1 text-[0.94rem] text-[#1d2738]">
+            <dt class="text-[0.78rem] text-forum-meta-light">当前模式</dt>
+            <dd class="mt-1 text-[0.94rem] text-forum-heading-soft">
               {{ mode === 'login' ? '登录已有账号' : '创建新账号' }}
             </dd>
           </div>
@@ -134,7 +144,7 @@ async function handleSubmit() {
         </div>
 
         <div class="my-5 mb-3">
-          <h2 class="m-0 mb-2 text-[1.4rem] text-[#1a2435]">{{ subtitle }}</h2>
+          <h2 class="m-0 mb-2 text-[1.4rem] text-forum-heading-soft">{{ subtitle }}</h2>
         </div>
 
         <el-form ref="formRef" :model="form" :rules="currentRules" label-position="top" @submit.prevent="handleSubmit">
