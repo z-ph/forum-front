@@ -37,3 +37,4 @@ backend
 .*
 !.github
 !.githooks
+!.gitea
