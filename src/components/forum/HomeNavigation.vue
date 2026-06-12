@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { EditPen } from '@element-plus/icons-vue'
-import type { ForumCategory, ForumTopicFeed } from '../../types/forum'
+import type { ForumCategory } from '../../types/forum'
 
 const props = defineProps<{
   categories: ForumCategory[]
-  tags: string[]
   activeCategoryId: string
+  tags: string[]
   activeTag: string
-  activeFeed: ForumTopicFeed
 }>()
 
 const emit = defineEmits<{
@@ -17,13 +15,6 @@ const emit = defineEmits<{
   'update:activeTag': [value: string]
   'compose': []
 }>()
-
-const router = useRouter()
-
-const feedItems = [
-  { key: 'categories' as ForumTopicFeed, label: '类别', name: '/(forum)/categories' as const },
-  { key: 'latest' as ForumTopicFeed, label: '最新', name: '/(forum)/latest' as const },
-]
 
 // Resolve which parent is currently active (or parent of the active child)
 const selectedParentId = computed(() => {
@@ -48,7 +39,6 @@ const selectedChildId = computed(() => {
 })
 
 function onParentChange(parentId: string) {
-  // Switching parent resets child selection — filter by parent category
   emit('update:activeCategoryId', parentId)
 }
 
@@ -63,11 +53,6 @@ function onChildChange(childId: string) {
 function updateTag(value: string) {
   emit('update:activeTag', value)
 }
-
-const sharedQuery = computed(() => ({
-  category: props.activeCategoryId !== 'all' ? props.activeCategoryId : undefined,
-  tag: props.activeTag !== 'all' ? props.activeTag : undefined,
-}))
 </script>
 
 <template>
@@ -91,17 +76,6 @@ const sharedQuery = computed(() => ({
         <el-option label="全部标签" value="all" />
         <el-option v-for="tag in props.tags" :key="tag" :label="`#${tag}`" :value="tag" />
       </el-select>
-      <nav aria-label="首页话题流" class="shrink-0 max-[640px]:w-full max-[640px]:shrink">
-        <el-radio-group :model-value="props.activeFeed" @change="(val: string | number | boolean | undefined) => {
-          if (!val) return
-          const item = feedItems.find(i => i.key === val)
-          if (item) router.push({ name: item.name, query: sharedQuery })
-        }">
-          <el-radio-button v-for="item in feedItems" :key="item.key" :value="item.key">
-            {{ item.label }}
-          </el-radio-button>
-        </el-radio-group>
-      </nav>
     </div>
 
     <el-button class="min-h-11 w-full px-4 sm:w-auto" type="primary" @click="emit('compose')">

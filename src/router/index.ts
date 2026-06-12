@@ -8,8 +8,6 @@ const router = createRouter({
 router.afterEach((to) => {
   const titleMap: Record<string, string> = {
     '/(forum)': '首页',
-    '/(forum)/latest': '最新话题',
-    '/(forum)/categories': '分类浏览',
     '/topics/[id]': '话题详情',
     '/auth': '登录 / 注册',
     '/admin': '管理后台',

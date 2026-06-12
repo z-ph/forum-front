@@ -32,11 +32,11 @@ export function useForumHomeState() {
       composeOpen.value = false
       // createTopicReal returns id='pending' because the backend API only
       // returns a success string. While the mutation-triggered refetch is
-      // in flight we redirect to /latest instead of the non-existent
-      // /topics/pending route. The new topic will appear in the feed
-      // once the refetch completes.
+      // in flight we redirect to the forum home instead of the
+      // non-existent /topics/pending route. The new topic will appear in
+      // the feed once the refetch completes.
       void router.push(topic.id === 'pending'
-        ? { name: '/(forum)/latest' }
+        ? { name: '/(forum)' }
         : { name: '/topics.[id]', params: { id: topic.id } })
     } catch (error) {
       ElMessage.error((error as Error).message)

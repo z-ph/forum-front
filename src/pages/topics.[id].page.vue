@@ -76,7 +76,7 @@ function setReplyingTo(reply: ForumReply) {
 
       <template v-else>
         <section class="border-b border-[var(--forum-border)] px-5 py-[18px] pb-6 md:px-8">
-          <el-tag @click="router.push({ name: '/(forum)/categories' })" class="cursor-pointer">
+          <el-tag @click="router.push({ name: '/(forum)' })" class="cursor-pointer">
             {{ data.categoryName }}
           </el-tag>
 

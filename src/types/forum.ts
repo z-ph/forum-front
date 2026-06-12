@@ -47,7 +47,6 @@ export interface ForumTopic {
   status?: number
 }
 
-export type ForumTopicFeed = 'categories' | 'latest'
 
 export interface ForumTopicDetail extends ForumTopic {
   replies: ForumReply[]

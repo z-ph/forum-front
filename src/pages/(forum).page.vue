@@ -1,21 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import ForumHeader from '../components/forum/ForumHeader.vue'
 import HomeNavigation from '../components/forum/HomeNavigation.vue'
 import TopicComposer from '../components/forum/TopicComposer.vue'
 import { useForumHomeState } from '../hooks/useForumHomeState'
 import { useForumFeed } from '../hooks/useForumFeed'
-import type { ForumTopicFeed } from '../types/forum'
 
-const route = useRoute()
 const router = useRouter()
 
 function handleAdmin() {
   void router.push({ path: '/admin' })
 }
-
-const activeFeed = computed(() => (route.meta.activeFeed as ForumTopicFeed) ?? 'latest')
 
 const {
   data,
@@ -28,9 +23,6 @@ const {
   activeCategoryId, activeTag,
   updateCategory, updateTag,
 } = useForumFeed(data)
-definePage({
-  redirect: { name: '/(forum)/categories' }
-})
 </script>
 
 <template>
@@ -41,7 +33,7 @@ definePage({
 
       <main id="main-content" class="flex min-h-0 flex-1 flex-col">
         <HomeNavigation :categories="categories" :tags="availableTags" :active-category-id="activeCategoryId"
-          :active-tag="activeTag" :active-feed="activeFeed" @update:active-category-id="updateCategory"
+          :active-tag="activeTag" @update:active-category-id="updateCategory"
           @update:active-tag="updateTag" @compose="handleCompose" />
 
         <div class="relative min-h-0 flex-1">
