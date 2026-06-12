@@ -36,7 +36,7 @@ export function useForumHomeState() {
       // non-existent /topics/pending route. The new topic will appear in
       // the feed once the refetch completes.
       void router.push(topic.id === 'pending'
-        ? { name: '/(forum)' }
+        ? { name: '/(forum)/' }
         : { name: '/topics.[id]', params: { id: topic.id } })
     } catch (error) {
       ElMessage.error((error as Error).message)

@@ -59,7 +59,7 @@ function setReplyingTo(reply: ForumReply) {
       <el-button
         text
         class="ml-3 mt-[18px] mb-1.5 md:ml-6"
-        @click="router.push({ name: '/(forum)' })"
+        @click="router.push({ name: '/(forum)/' })"
       >
         <el-icon><ArrowLeft /></el-icon>
         返回论坛首页
@@ -76,7 +76,7 @@ function setReplyingTo(reply: ForumReply) {
 
       <template v-else>
         <section class="border-b border-[var(--forum-border)] px-5 py-[18px] pb-6 md:px-8">
-          <el-tag @click="router.push({ name: '/(forum)' })" class="cursor-pointer">
+          <el-tag @click="router.push({ name: '/(forum)/' })" class="cursor-pointer">
             {{ data.categoryName }}
           </el-tag>
 

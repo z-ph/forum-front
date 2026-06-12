@@ -90,7 +90,7 @@ async function handleSubmit() {
       ElMessage.success('注册成功，已自动登录')
     }
 
-    void router.push({ name: '/(forum)' })
+    void router.push({ name: '/(forum)/' })
   } catch (error) {
     ElMessage.error((error as Error).message || '提交失败，请稍后重试')
   }
@@ -104,7 +104,7 @@ async function handleSubmit() {
         <div class="auth-brand">
           <Logo />
         </div>
-        <button type="button" class="auth-back" @click="router.push({ name: '/(forum)' })">
+        <button type="button" class="auth-back" @click="router.push({ name: '/(forum)/' })">
           返回论坛
         </button>
       </header>

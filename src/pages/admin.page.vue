@@ -70,7 +70,7 @@ definePage({
           class="sticky top-0 flex h-screen w-[220px] shrink-0 flex-col border-r [background:var(--forum-surface)] [border-color:var(--forum-border)]">
           <!-- Logo / Title -->
           <div class="border-b px-5 py-5 [border-color:var(--forum-border)]">
-            <RouterLink :to="{ name: '/(forum)' }"
+            <RouterLink :to="{ name: '/(forum)/' }"
               class="block text-base font-bold no-underline [color:var(--forum-text)] hover:opacity-80">
               机器人DIY论坛
             </RouterLink>
