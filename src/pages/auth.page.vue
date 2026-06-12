@@ -2,13 +2,13 @@
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
+import Logo from '../components/Logo.vue'
 import { useLoginMutation, useRegisterMutation } from '../hooks/useForum'
 
 const router = useRouter()
 const mode = ref<'login' | 'register'>('login')
 const loginMutation = useLoginMutation()
 const registerMutation = useRegisterMutation()
-const isDev = import.meta.env.DEV
 const isAuthPending = computed(() => loginMutation.isPending.value || registerMutation.isPending.value)
 const formRef = ref<FormInstance>()
 
@@ -62,11 +62,11 @@ watch(mode, () => {
   })
 })
 
-const title = computed(() => (mode.value === 'login' ? '登录论坛' : '注册账号'))
-const subtitle = computed(() =>
+const heading = computed(() => (mode.value === 'login' ? '登录' : '注册'))
+const greeting = computed(() =>
   mode.value === 'login'
-    ? '继续参与讨论、收藏主题并跟踪回复。'
-    : '先创建一个账号，再进入完整的论坛使用流程。',
+    ? '登录你的账号，继续参与社区讨论。'
+    : '创建账号，加入机器人 DIY 社区。',
 )
 
 async function handleSubmit() {
@@ -98,84 +98,177 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-transparent px-4 pb-10">
-    <div
-      class="mx-auto grid w-full max-w-[1040px] grid-cols-1 bg-[var(--forum-surface)] md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:border-x md:border-[var(--forum-border)]"
-    >
-      <header
-        class="col-span-full flex items-center justify-between gap-4 border-b border-[var(--forum-border)] px-5 py-6 md:px-8"
-      >
-        <div>
-          <strong class="block text-[1.2rem] text-forum-heading">社区论坛</strong>
-          <span class="mt-1 block text-[0.82rem] text-forum-meta-light">账号入口</span>
+  <div class="auth-page">
+    <div class="auth-panel">
+      <header class="auth-header">
+        <div class="auth-brand">
+          <Logo />
         </div>
-        <el-button text @click="router.push({ name: '/(forum)' })">返回论坛</el-button>
+        <button type="button" class="auth-back" @click="router.push({ name: '/(forum)' })">
+          返回论坛
+        </button>
       </header>
 
-      <section
-        class="border-b border-[var(--forum-border)] bg-[var(--forum-surface-muted)] px-5 py-6 md:border-r md:border-b-0 md:border-[var(--forum-border)] md:px-8 md:py-7"
-      >
-        <h1 class="m-0 mb-3.5 text-[clamp(1.9rem,2.8vw,2.8rem)] leading-[1.16] text-forum-heading">
-          {{ title }}
-        </h1>
-        <p v-if="isDev" class="m-0 leading-[1.8] text-forum-meta">
-          账号页保持和论坛首页一致的扁平结构，不额外做展示型包装，重点仍然是尽快进入核心讨论流程。
-        </p>
-
-        <dl class="mt-6 border-y border-[var(--forum-border)]">
-          <div class="border-t-0 py-3.5 first:border-t-0 [&+div]:border-t [&+div]:border-[var(--forum-border)]">
-            <dt class="text-[0.78rem] text-forum-meta-light">当前模式</dt>
-            <dd class="mt-1 text-[0.94rem] text-forum-heading-soft">
-              {{ mode === 'login' ? '登录已有账号' : '创建新账号' }}
-            </dd>
+      <div class="auth-body">
+        <div class="auth-form-wrapper">
+          <div class="auth-heading-section">
+            <h1 class="auth-title">{{ heading }}</h1>
+            <p class="auth-greeting">{{ greeting }}</p>
           </div>
-        </dl>
-      </section>
 
-      <section class="flex flex-col px-5 py-6 md:px-8 md:py-7">
-        <div>
           <el-segmented
             v-model="mode"
+            size="large"
             :options="[
               { label: '登录', value: 'login' },
               { label: '注册', value: 'register' },
             ]"
+            class="auth-segmented"
           />
+
+          <el-form
+            ref="formRef"
+            :model="form"
+            :rules="currentRules"
+            label-position="top"
+            class="auth-form"
+            @submit.prevent="handleSubmit"
+          >
+            <el-form-item v-if="mode === 'register'" label="昵称" prop="nickname">
+              <el-input v-model="form.nickname" placeholder="你希望别人怎么称呼你" />
+            </el-form-item>
+
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="form.email" type="email" placeholder="name@example.com" />
+            </el-form-item>
+
+            <el-form-item v-if="mode === 'register'" label="用户名" prop="username">
+              <el-input v-model="form.username" placeholder="字母、数字和下划线" />
+            </el-form-item>
+
+            <el-form-item label="密码" prop="password">
+              <el-input v-model="form.password" type="password" show-password placeholder="至少 6 个字符" />
+            </el-form-item>
+
+            <el-form-item class="auth-submit-item">
+              <el-button
+                type="primary"
+                :loading="isAuthPending"
+                class="auth-submit-btn"
+                @click="handleSubmit"
+              >
+                {{ mode === 'login' ? '登录' : '注册并进入论坛' }}
+              </el-button>
+            </el-form-item>
+          </el-form>
         </div>
-
-        <div class="my-5 mb-3">
-          <h2 class="m-0 mb-2 text-[1.4rem] text-forum-heading-soft">{{ subtitle }}</h2>
-        </div>
-
-        <el-form ref="formRef" :model="form" :rules="currentRules" label-position="top" @submit.prevent="handleSubmit">
-          <el-form-item v-if="mode === 'register'" label="昵称" prop="nickname">
-            <el-input v-model="form.nickname" placeholder="例如：周可" />
-          </el-form-item>
-
-          <el-form-item label="邮箱" prop="email">
-            <el-input v-model="form.email" type="email" placeholder="例如：zhouke@example.com" />
-          </el-form-item>
-
-          <el-form-item v-if="mode === 'register'" label="用户名" prop="username">
-            <el-input v-model="form.username" placeholder="例如：zhouke" />
-          </el-form-item>
-
-          <el-form-item label="密码" prop="password">
-            <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
-          </el-form-item>
-
-          <div class="mt-2.5 flex flex-col items-stretch justify-between gap-2.5 sm:flex-row sm:items-center">
-<el-button text @click="router.push({ name: '/(forum)' })">返回论坛</el-button>
-            <el-button
-              type="primary"
-              :loading="isAuthPending"
-              @click="handleSubmit"
-            >
-              {{ mode === 'login' ? '登录' : '注册并进入论坛' }}
-            </el-button>
-          </div>
-        </el-form>
-      </section>
+      </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--forum-bg);
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 420px;
+  background: var(--forum-surface);
+  border: 1px solid var(--forum-border);
+}
+
+.auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--forum-border);
+}
+
+.auth-brand {
+  font-size: 0.95rem;
+}
+
+.auth-back {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--forum-meta);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.15s;
+}
+
+.auth-back:hover {
+  color: var(--forum-text);
+}
+
+.auth-body {
+  padding: 32px 24px 36px;
+}
+
+.auth-form-wrapper {
+  width: 100%;
+}
+
+.auth-heading-section {
+  margin-bottom: 24px;
+}
+
+.auth-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--forum-heading);
+  margin: 0 0 8px;
+}
+
+.auth-greeting {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--forum-meta);
+  margin: 0;
+}
+
+.auth-segmented {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.auth-form {
+  width: 100%;
+}
+
+.auth-submit-item {
+  margin-top: 28px;
+  margin-bottom: 0;
+}
+
+.auth-submit-item :deep(.el-form-item__content) {
+  width: 100%;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  height: 40px;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  .auth-body {
+    padding: 24px 20px 28px;
+  }
+
+  .auth-title {
+    font-size: 1.3rem;
+  }
+}
+</style>
