@@ -33,14 +33,9 @@ export default defineConfig(({ mode }) => {
       vue(),
       AutoImport({
         resolvers: [ElementPlusResolver()],
-        imports: [{
-          'element-plus': ['useFormItem', 'ElMessage', 'ElMessageBox'],
-        }],
-        dts: 'src/auto-imports.d.ts',
       }),
       Components({
         resolvers: [ElementPlusResolver()],
-        dts: 'src/components.d.ts',
       }),
     ],
     server: {
