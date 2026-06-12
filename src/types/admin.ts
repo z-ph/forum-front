@@ -1,5 +1,5 @@
 import type { UserPageQuery } from '../services/userApi'
-import type { TopicPageQuery } from '../services/topicApi'
+import type { AdminTopicPageQuery } from '../services/topicApi'
 
 /** Admin user list query — extends UserPageQuery with search/filter fields */
 export interface AdminUserQuery extends UserPageQuery {
@@ -7,10 +7,9 @@ export interface AdminUserQuery extends UserPageQuery {
   role?: string
 }
 
-/** Admin topic list query — extends TopicPageQuery with search/filter fields */
-export interface AdminTopicQuery extends TopicPageQuery {
+/** Admin topic list query — uses AdminTopicPageQuery from backend */
+export interface AdminTopicQuery extends AdminTopicPageQuery {
   keyword?: string
-  status?: number
 }
 
 /** Admin category create/edit form */

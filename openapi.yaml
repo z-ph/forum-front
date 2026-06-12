@@ -4,8 +4,8 @@ info:
   description: |
     论坛后端 REST API 接口文档
 
-     **后端版本**: commit `628963f` (master)
-     日期: 2026-05-29
+     **后端版本**: commit `26f018c` (master)
+     日期: 2026-06-12
 
     ## 通用说明
     - 所有响应统一包裹在 `Result<T>` 中: `{ code: 1, msg: "success", data: T }`
@@ -13,7 +13,7 @@ info:
     - 分页接口返回 `Page<T>`: `{ records: T[], total, size, current, pages }`
     - 需要认证的接口在 `Authorization` header 中传入 `Bearer <jwt_token>`
     - 日期格式: `yyyy-MM-dd HH:mm:ss` (LocalDateTime), `yyyy-MM-dd` (LocalDate)
-  version: "628963f"
+  version: "26f018c"
   contact:
     name: Backend Team
 
@@ -50,6 +50,8 @@ paths:
     $ref: "./openapi/topic.yaml#/paths/~1topic~1{id}~1status"
   /topic/my:
     $ref: "./openapi/topic.yaml#/paths/~1topic~1my"
+  /topic/admin/page:
+    $ref: "./openapi/topic.yaml#/paths/~1topic~1admin~1page"
 
   # ==================== Tag ====================
   /tag:
@@ -88,10 +90,31 @@ paths:
     $ref: "./openapi/category.yaml#/paths/~1category~1selectAll"
 
   # ==================== Attachment ====================
-  /attachment/view/{id}:
-    $ref: "./openapi/attachment.yaml#/paths/~1attachment~1view~1{id}"
-  /attachment/download/{id}:
-    $ref: "./openapi/attachment.yaml#/paths/~1attachment~1download~1{id}"
+  /attachment/url/{id}:
+    $ref: "./openapi/attachment.yaml#/paths/~1attachment~1url~1{id}"
+  /attachment/download-url/{id}:
+    $ref: "./openapi/attachment.yaml#/paths/~1attachment~1download-url~1{id}"
+
+  # ==================== Health ====================
+  /health:
+    get:
+      tags: [Health]
+      summary: 健康检查
+      operationId: healthCheck
+      security: []
+      responses:
+        "200":
+          description: 服务正常
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./openapi/common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        example: "ok"
 
 components:
   securitySchemes:
@@ -119,6 +142,8 @@ components:
       $ref: "./openapi/topic.yaml#/components/schemas/TopicCreateRequest"
     TopicPageQuery:
       $ref: "./openapi/topic.yaml#/components/schemas/TopicPageQuery"
+    AdminTopicPageQuery:
+      $ref: "./openapi/topic.yaml#/components/schemas/AdminTopicPageQuery"
     TopicVO:
       $ref: "./openapi/topic.yaml#/components/schemas/TopicVO"
     PageTopicVO:
@@ -161,5 +186,7 @@ tags:
     description: 回复管理（新增、删除、分页查询）
   - name: Attachment
     description: 附件管理（在线预览、下载）
+  - name: Health
+    description: 健康检查
   - name: Category
     description: 分类管理（CRUD、树形查询、搜索）

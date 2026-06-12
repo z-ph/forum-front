@@ -183,6 +183,30 @@ paths:
                         type: string
                         example: "修改成功"
 
+  /topic/admin/page:
+    post:
+      tags: [Topic]
+      summary: 管理员分页查询话题（可查看显示/隐藏的帖子）
+      operationId: adminPageTopics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminTopicPageQuery"
+      responses:
+        "200":
+          description: 话题分页数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PageTopicVO"
+
   /topic/my:
     get:
       tags: [Topic]
@@ -301,6 +325,31 @@ components:
           type: integer
           format: int64
           description: 标签ID
+        pageNum:
+          type: integer
+          default: 1
+        pageSize:
+          type: integer
+          default: 10
+
+    AdminTopicPageQuery:
+      type: object
+      properties:
+        parentId:
+          type: integer
+          format: int64
+          description: 父分类ID
+        categoryId:
+          type: integer
+          format: int64
+          description: 分类ID
+        tagId:
+          type: integer
+          format: int64
+          description: 标签ID
+        status:
+          type: integer
+          description: "状态：1=显示, 0=隐藏, 不传=全部"
         pageNum:
           type: integer
           default: 1

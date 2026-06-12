@@ -1,10 +1,11 @@
 paths:
-  /attachment/view/{id}:
+  /attachment/url/{id}:
     get:
       tags: [Attachment]
-      summary: 附件在线预览（图片）
-      description: 仅支持图片类型附件（IMAGE），直接返回图片二进制流
-      operationId: viewAttachment
+      summary: 获取附件预览签名URL
+      description: 返回 MinIO 预签名 URL，用于在线预览附件
+      operationId: getAttachmentUrl
+      security: []
       parameters:
         - name: id
           in: path
@@ -15,23 +16,25 @@ paths:
           description: 附件ID
       responses:
         "200":
-          description: 图片二进制流
+          description: 签名URL字符串
           content:
-            image/*:
+            application/json:
               schema:
-                type: string
-                format: binary
-        "404":
-          description: 文件不存在
-        "500":
-          description: 文件输出失败
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        description: MinIO 预签名预览URL
 
-  /attachment/download/{id}:
+  /attachment/download-url/{id}:
     get:
       tags: [Attachment]
-      summary: 下载附件
-      description: 下载附件（图片和文件均可），Content-Disposition 为 attachment
-      operationId: downloadAttachment
+      summary: 获取附件下载签名URL
+      description: 返回 MinIO 预签名下载 URL（带 Content-Disposition: attachment）
+      operationId: getAttachmentDownloadUrl
+      security: []
       parameters:
         - name: id
           in: path
@@ -42,16 +45,17 @@ paths:
           description: 附件ID
       responses:
         "200":
-          description: 附件文件流
+          description: 签名下载URL字符串
           content:
-            application/octet-stream:
+            application/json:
               schema:
-                type: string
-                format: binary
-        "404":
-          description: 文件不存在
-        "500":
-          description: 文件输出失败
+                allOf:
+                  - $ref: "./common.yaml#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        description: MinIO 预签名下载URL
 
 components:
   schemas:
@@ -71,14 +75,10 @@ components:
           description: 文件大小（字节）
         fileType:
           type: string
-          enum: [IMAGE, FILE]
           description: 文件类型
         url:
           type: string
-          description: 图片预览地址（直接访问磁盘文件的静态资源地址）
-        downloadUrl:
-          type: string
-          description: 下载地址（通过接口下载）
+          description: 预览地址
         relatedType:
           type: string
           enum: [TOPIC, REPLY]

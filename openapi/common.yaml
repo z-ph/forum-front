@@ -13,7 +13,8 @@ components:
           标签: /tag/selectAll, /tag/search
           回复: /reply/top/page, /reply/child/page
           分类: /category/parents, /category/children/{parentId}, /category/search, /category/selectAll
-          附件: /attachment/view/{id}, /attachment/download/{id}
+          附件: /attachment/url/{id}, /attachment/download-url/{id}
+          健康检查: /health
         - 角色控制: 部分接口需要 ADMIN 角色（如用户状态管理、分类/标签管理）
 
   schemas:

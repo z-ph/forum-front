@@ -1,35 +1,31 @@
 import apiClient from '@/core/apiClient'
+import type { ApiResponse } from '@/types/api'
 
-/** GET /attachment/view/{id} - 附件在线预览（图片） */
-export function getAttachmentViewUrl(id: number): string {
-  const token = localStorage.getItem('token')
-  const baseUrl = apiClient.defaults.baseURL ?? ''
-  const params = token ? `?token=${encodeURIComponent(token)}` : ''
-  return `${baseUrl}/attachment/view/${id}${params}`
+/** GET /attachment/url/{id} - 获取附件预览签名URL */
+export async function getAttachmentUrl(id: number): Promise<ApiResponse<string>> {
+  const response = await apiClient.get<ApiResponse<string>>('/attachment/url/' + id)
+  return response.data
 }
 
-/** GET /attachment/download/{id} - 附件下载 */
-export function getAttachmentDownloadUrl(id: number): string {
-  const token = localStorage.getItem('token')
-  const baseUrl = apiClient.defaults.baseURL ?? ''
-  const params = token ? `?token=${encodeURIComponent(token)}` : ''
-  return `${baseUrl}/attachment/download/${id}${params}`
+/** GET /attachment/download-url/{id} - 获取附件下载签名URL */
+export async function getAttachmentDownloadUrl(id: number): Promise<ApiResponse<string>> {
+  const response = await apiClient.get<ApiResponse<string>>('/attachment/download-url/' + id)
+  return response.data
 }
 
 /**
  * 下载附件并触发浏览器下载
  */
 export async function downloadAttachment(id: number, fileName: string): Promise<void> {
-  const response = await apiClient.get(`/attachment/download/${id}`, {
-    responseType: 'blob',
-  })
-
-  const url = window.URL.createObjectURL(new Blob([response.data]))
+  const res = await getAttachmentDownloadUrl(id)
+  if (res.code !== 1 || !res.data) {
+    throw new Error(res.msg || '获取下载地址失败')
+  }
   const link = document.createElement('a')
-  link.href = url
+  link.href = res.data
   link.setAttribute('download', fileName)
+  link.target = '_blank'
   document.body.appendChild(link)
   link.click()
   link.remove()
-  window.URL.revokeObjectURL(url)
 }

@@ -44,6 +44,10 @@ export interface TopicPageQuery {
   pageSize?: number
 }
 
+export interface AdminTopicPageQuery extends TopicPageQuery {
+  status?: number
+}
+
 // ---------- API Functions ----------
 
 /** Convert topic create request to multipart/form-data */
@@ -133,5 +137,11 @@ export async function getMyTopics(
   const response = await apiClient.get<ApiResponse<Page<TopicVO>>>('/topic/my', {
     params: { pageNum, pageSize },
   })
+  return response.data
+}
+
+/** POST /topic/admin/page - 管理员分页查询话题 */
+export async function adminPageTopics(data: AdminTopicPageQuery): Promise<ApiResponse<Page<TopicVO>>> {
+  const response = await apiClient.post<ApiResponse<Page<TopicVO>>>('/topic/admin/page', data)
   return response.data
 }

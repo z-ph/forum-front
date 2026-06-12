@@ -12,8 +12,7 @@ import { isApiSuccess } from '../core/apiClient'
 
 export const adminKeys = {
   users: (params: AdminUserQuery) => ['admin', 'users', params] as const,
-  topics: (params: AdminTopicQuery) => ['admin', 'topics', params] as const,
-  categories: ['admin', 'categories'] as const,
+  topics: (params: AdminTopicQuery) => ['admin', 'topics', params] as const,  categories: ['admin', 'categories'] as const,
   tags: ['admin', 'tags'] as const,
 }
 
@@ -38,7 +37,7 @@ export function useAdminTopicsQuery(params: Ref<AdminTopicQuery>) {
   return useQuery({
     queryKey: computed(() => adminKeys.topics(params.value)),
     queryFn: async () => {
-      const res = await topicApi.pageTopics(params.value)
+      const res = await topicApi.adminPageTopics(params.value)
       if (!isApiSuccess(res)) {throw new Error(res.msg || '加载话题列表失败')}
       return res.data
     },
