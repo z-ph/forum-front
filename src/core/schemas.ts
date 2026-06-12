@@ -11,7 +11,7 @@ export const AttachmentVOSchema = z.object({
   fileSize: z.number(),
   fileType: z.enum(['IMAGE', 'FILE']),
   url: z.string().nullable(),
-  downloadUrl: z.string(),
+  downloadUrl: z.string().optional(),
   relatedType: z.enum(['TOPIC', 'REPLY']),
   relatedId: z.number(),
   createTime: z.string(),

@@ -21,7 +21,7 @@ export interface AttachmentVO {
   fileSize: number
   fileType: 'IMAGE' | 'FILE'
   url: string | null
-  downloadUrl: string
+  downloadUrl?: string
   relatedType: 'TOPIC' | 'REPLY'
   relatedId: number
   createTime: string
