@@ -108,7 +108,6 @@ async function registerUser(payload: RegisterPayload): Promise<ForumUser> {
     password: payload.password,
   })
   if (!isApiSuccess(res)) {throw new Error(res.msg || '注册失败')}
-  localStorage.setItem('token', res.data)
 
   const userRes = await userApi.getCurrentUser()
   if (!isApiSuccess(userRes)) {throw new Error('无法获取用户信息')}
@@ -116,7 +115,7 @@ async function registerUser(payload: RegisterPayload): Promise<ForumUser> {
 }
 
 async function logoutUser(): Promise<void> {
-  localStorage.removeItem('token')
+  await userApi.logout()
 }
 
 /**

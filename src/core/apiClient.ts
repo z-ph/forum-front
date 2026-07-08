@@ -12,21 +12,11 @@ export function isApiSuccess(response: { code: number }): boolean {
 
 const apiClient = axios.create(apiClientConfig)
 
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-
-  return config
-})
-
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
+      // Cookie is HttpOnly; backend will clear it via /user/logout.
       void router.push({ name: '/auth' })
     }
     return Promise.reject(

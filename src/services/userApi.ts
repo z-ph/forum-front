@@ -1,4 +1,4 @@
-import apiClient, { isApiSuccess } from '@/core/apiClient'
+import apiClient from '@/core/apiClient'
 import type { ApiResponse, Page } from '@/types/api'
 
 export type UserRole = 'USER' | 'ADMIN'
@@ -56,11 +56,13 @@ export async function register(payload: RegisterRequest): Promise<ApiResponse<st
 
 export async function login(payload: LoginRequest): Promise<ApiResponse<string>> {
   const response = await apiClient.post<ApiResponse<string>>('/user/login', payload)
-  const body = response.data
-  if (isApiSuccess(body)) {
-    localStorage.setItem('token', body.data)
-  }
-  return body
+  // JWT is written to an HttpOnly cookie by the backend via Set-Cookie.
+  return response.data
+}
+
+export async function logout(): Promise<ApiResponse<string>> {
+  const response = await apiClient.post<ApiResponse<string>>('/user/logout')
+  return response.data
 }
 
 export async function getCurrentUser(): Promise<ApiResponse<UserVO>> {
